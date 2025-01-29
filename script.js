@@ -49,19 +49,19 @@ function mostrarSeccion(seccionId) {
 // Guardar datos del presupuesto
 document.getElementById("presupuesto-form").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const nombre = document.getElementById("nombre-evento").value;
-  const precio = parseFloat(document.getElementById("precio-evento").value);
-  const tipo = document.getElementById("tipo-evento").value;
-  const cuotas = parseInt(document.getElementById("cuotas-evento").value);
-  const fecha = document.getElementById("fecha-evento").value;
+  const nombre = document.getElementById("nombre").value;
+  const precio = parseFloat(document.getElementById("precio").value);
+  const tipo = document.getElementById("tipo").value;
+  const cuotas = parseInt(document.getElementById("cuotas").value);
+  const fecha = document.getElementById("fecha").value;
 
   if (nombre && precio && tipo && cuotas && fecha) {
     const resultado = await fetchAPI('addPresupuesto', {
-      nombre,
-      precio,
-      tipo,
-      cuotas,
-      fecha
+      Nombre: nombre,
+      Precio: precio,
+      Tipo: tipo,
+      Cuotas: cuotas,
+      Fecha: fecha
     });
 
     if (resultado !== null) {
@@ -89,11 +89,11 @@ async function actualizarListaPresupuestos() {
     const div = document.createElement("div");
     div.classList.add("evento");
     div.innerHTML = `
-      <p>${presupuesto.nombre} (${presupuesto.tipo}) - $${presupuesto.precio}</p>
+      <p>${presupuesto.Nombre} (${presupuesto.Tipo}) - $${presupuesto.Precio}</p>
       <div class="detalles">
-        <p>Tipo de Evento: ${presupuesto.tipo}</p>
-        <p>Fecha: ${presupuesto.fecha}</p>
-        <p>Cuotas: ${presupuesto.cuotas}</p>
+        <p>Tipo de Evento: ${presupuesto.Tipo}</p>
+        <p>Fecha: ${presupuesto.Fecha}</p>
+        <p>Cuotas: ${presupuesto.Cuotas}</p>
         <button onclick="confirmarPresupuesto(${index})">Confirmar</button>
         <button onclick="eliminarPresupuesto(${index})">Eliminar</button>
       </div>
@@ -134,10 +134,10 @@ async function actualizarListaPagos() {
     const div = document.createElement("div");
     div.classList.add("evento");
     div.innerHTML = `
-      <p>${pago.nombre} (${pago.tipo}) - $${pago.precio}</p>
+      <p>${pago.Nombre} (${pago.Tipo}) - $${pago.Precio}</p>
       <div class="detalles">
-        <p>Cuotas pagadas: <input type="number" min="0" max="${pago.cuotas}" 
-           value="${pago.cuotasPagadas || 0}" 
+        <p>Cuotas pagadas: <input type="number" min="0" max="${pago.Cuotas}" 
+           value="${pago.CuotasPagadas || 0}" 
            onchange="actualizarCuotasPagadas(${index}, this.value)"></p>
         <button onclick="completarPago(${index})">Completar</button>
       </div>
@@ -181,10 +181,10 @@ async function actualizarListaCompletados() {
     const div = document.createElement("div");
     div.classList.add("evento");
     div.innerHTML = `
-      <p>${completado.nombre} (${completado.tipo}) - $${completado.precio}</p>
+      <p>${completado.Nombre} (${completado.Tipo}) - $${completado.Precio}</p>
       <div class="detalles">
-        <p>Fecha de evento: ${completado.fecha}</p>
-        <p>Fecha de completado: ${completado.fechaCompletado}</p>
+        <p>Fecha de evento: ${completado.Fecha}</p>
+        <p>Fecha de completado: ${completado.FechaCompletado}</p>
       </div>
     `;
     div.addEventListener("click", () => {
