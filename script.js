@@ -1,11 +1,13 @@
 // 🔥 Configuración de Firebase (reemplaza con tu propia configuración)
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_PROYECTO.firebaseapp.com",
-  projectId: "TU_PROYECTO",
-  storageBucket: "TU_PROYECTO.appspot.com",
-  messagingSenderId: "TU_SENDER_ID",
-  appId: "TU_APP_ID",
+  apiKey: "AIzaSyDG6ftn5hJpMilh1y0cPjBOikpRjLj5aX8",
+  authDomain: "gestion-de-presupuestos.firebaseapp.com",
+  databaseURL: "https://gestion-de-presupuestos-default-rtdb.firebaseio.com",
+  projectId: "gestion-de-presupuestos",
+  storageBucket: "gestion-de-presupuestos.firebasestorage.app",
+  messagingSenderId: "511780646984",
+  appId: "1:511780646984:web:384b3cc8359df4e25ba87d",
+  measurementId: "G-0KBP0PPQZS"
 };
 
 // Inicializar Firebase
