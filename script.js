@@ -44,18 +44,12 @@ function actualizarListaPresupuestos() {
     div.innerHTML = `
       <p>${presupuesto.nombre} (${presupuesto.tipo}) - $${presupuesto.precio}</p>
       <div class="detalles">
-        <p>Tipo de Evento: ${presupuesto.tipo}</p>
         <p>Fecha: ${presupuesto.fecha}</p>
         <p>Cuotas: ${presupuesto.cuotas}</p>
         <button onclick="confirmarPresupuesto(${index})">Confirmar</button>
         <button onclick="eliminarPresupuesto(${index})">Eliminar</button>
       </div>
     `;
-    div.addEventListener("click", (e) => {
-      if (!e.target.matches('input, button')) {
-        div.classList.toggle("active");
-      }
-    });
     lista.appendChild(div);
   });
 }
@@ -82,39 +76,12 @@ function actualizarListaPagos() {
   pagosEnCurso.forEach((pago, index) => {
     const div = document.createElement("div");
     div.classList.add("evento");
-    let saldoRestante = pago.precio;
     div.innerHTML = `
       <p>${pago.nombre} (${pago.tipo})</p>
-      <div class="detalles">
-        <p>Saldo Restante: $<span id="saldo-${index}">${saldoRestante}</span></p>
-        ${Array.from({ length: pago.cuotas })
-          .map(
-            (_, i) => `
-          <label>Cuota ${i + 1}: <input type="number" id="cuota-${index}-${i}" onchange="actualizarSaldo(${index}, ${i}, ${pago.precio})"></label>
-        `
-          )
-          .join("")}
-        <button onclick="completarPago(${index})">Completar</button>
-      </div>
+      <button onclick="completarPago(${index})">Completar Pago</button>
     `;
-    div.addEventListener("click", (e) => {
-      if (!e.target.matches('input, button')) {
-        div.classList.toggle("active");
-      }
-    });
     lista.appendChild(div);
   });
-}
-
-function actualizarSaldo(index, cuotaIndex, precio) {
-  const input = document.getElementById(`cuota-${index}-${cuotaIndex}`);
-  pagosEnCurso[index].pagos = pagosEnCurso[index].pagos || [];
-  pagosEnCurso[index].pagos[cuotaIndex] = parseFloat(input.value) || 0;
-  const saldoRestante = precio - pagosEnCurso[index].pagos.reduce((a, b) => a + b, 0);
-  document.getElementById(`saldo-${index}`).innerText = saldoRestante;
-  if (saldoRestante <= 0) {
-    completarPago(index);
-  }
 }
 
 function completarPago(index) {
@@ -137,11 +104,6 @@ function actualizarListaCompletados() {
       <p>${completado.nombre} (${completado.tipo}) - $${completado.precio}</p>
       <button onclick="eliminarCompletado(${index})">Eliminar</button>
     `;
-    div.addEventListener("click", (e) => {
-      if (!e.target.matches('button')) {
-        div.classList.toggle("active");
-      }
-    });
     lista.appendChild(div);
   });
 }
@@ -152,7 +114,7 @@ function eliminarCompletado(index) {
   actualizarListaCompletados();
 }
 
-// Inicializar listas al cargar la página
+// Inicializar listas
 actualizarListaPresupuestos();
 actualizarListaPagos();
 actualizarListaCompletados();
