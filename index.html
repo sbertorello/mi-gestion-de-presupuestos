@@ -17,6 +17,7 @@
   </nav>
 
   <main>
+    <!-- Página 1: Presupuestos -->
     <section id="presupuestos">
       <h1>Presupuestos</h1>
       <form id="presupuesto-form">
@@ -53,27 +54,25 @@
       <p id="mensaje-confirmacion" style="display: none;">Evento guardado correctamente.</p>
     </section>
 
+    <!-- Página 2: Presupuestos Enviados -->
     <section id="presupuestos-enviados" style="display: none;">
       <h1>Presupuestos Enviados</h1>
       <div id="lista-presupuestos"></div>
     </section>
 
+    <!-- Página 3: Pagos en Curso -->
     <section id="pagos-en-curso" style="display: none;">
       <h1>Pagos en Curso</h1>
       <div id="lista-pagos"></div>
     </section>
 
+    <!-- Página 4: Pagos Completados -->
     <section id="pagos-completados" style="display: none;">
       <h1>Pagos Completados</h1>
       <div id="lista-completados"></div>
     </section>
   </main>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"></script>
-  <script src="script.js"></script> <!-- Carga después de Firebase -->
-
+  <script src="script.js"></script>
 </body>
 </html>
-
