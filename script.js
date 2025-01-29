@@ -21,15 +21,8 @@ document.getElementById("presupuesto-form").addEventListener("submit", (e) => {
   const fecha = document.getElementById("fecha-evento").value;
 
   if (nombre && precio && tipo && cuotas && fecha) {
-    const nuevoPresupuesto = { nombre, precio, tipo, cuotas, fecha };
-    presupuestos.push(nuevoPresupuesto);
-
-    // Guardar en localStorage
+    presupuestos.push({ nombre, precio, tipo, cuotas, fecha });
     localStorage.setItem('presupuestos', JSON.stringify(presupuestos));
-
-    // Guardar en Firestore
-    guardarDatosEnFirestore(nuevoPresupuesto);
-
     document.getElementById("presupuesto-form").reset();
     document.getElementById("mensaje-confirmacion").style.display = "block";
     setTimeout(() => {
@@ -40,17 +33,6 @@ document.getElementById("presupuesto-form").addEventListener("submit", (e) => {
     alert("Por favor, completa todos los campos.");
   }
 });
-
-// Función para guardar en Firestore
-function guardarDatosEnFirestore(datos) {
-  db.collection("presupuestos").add(datos)
-    .then((docRef) => {
-      console.log("Documento escrito con ID: ", docRef.id);
-    })
-    .catch((error) => {
-      console.error("Error al agregar documento: ", error);
-    });
-}
 
 // Actualizar lista de presupuestos enviados
 function actualizarListaPresupuestos() {
@@ -174,21 +156,3 @@ function eliminarCompletado(index) {
 actualizarListaPresupuestos();
 actualizarListaPagos();
 actualizarListaCompletados();
-
-// Cargar los datos desde Firestore (si no están en localStorage)
-function cargarDatosDesdeFirestore() {
-  db.collection("presupuestos").get()
-    .then((querySnapshot) => {
-      querySnapshot.forEach((doc) => {
-        presupuestos.push(doc.data());
-      });
-      localStorage.setItem('presupuestos', JSON.stringify(presupuestos)); // Guardar los datos en localStorage
-      actualizarListaPresupuestos();
-    })
-    .catch((error) => {
-      console.error("Error al obtener documentos: ", error);
-    });
-}
-
-// Llamar esta función al cargar la página
-cargarDatosDesdeFirestore();
