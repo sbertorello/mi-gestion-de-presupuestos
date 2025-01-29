@@ -1,5 +1,5 @@
 // Reemplaza esta URL con la URL de tu Web App
-const API_URL = 'https://script.google.com/macros/s/AKfycbwqgJR1MpalhO63zcevkq3zzOYD-20491RDGsyT_rkQxCSBnngPYc12VLoimaxeSwcy/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyW1LuNTofuyQ4OL6tcTRKR09j9OBxQbBBevpQ7bVzRfDXcv1EPGmSbiqOA0FMAT6Hr/exec';
 
 // Función para hacer peticiones a la API
 async function fetchAPI(operation, data = null) {
