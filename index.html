@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Presupuestos y Pagos</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="#" onclick="mostrarSeccion('presupuestos')">Presupuestos</a></li>
+      <li><a href="#" onclick="mostrarSeccion('presupuestos-enviados')">Presupuestos Enviados</a></li>
+      <li><a href="#" onclick="mostrarSeccion('pagos-en-curso')">Pagos en Curso</a></li>
+      <li><a href="#" onclick="mostrarSeccion('pagos-completados')">Pagos Completados</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <!-- Página 1: Presupuestos -->
+    <section id="presupuestos">
+      <h1>Presupuestos</h1>
+      <form id="presupuesto-form">
+        <label for="nombre-evento">Nombre del Evento:</label>
+        <input type="text" id="nombre-evento" required>
+
+        <label for="precio-evento">Precio:</label>
+        <input type="number" id="precio-evento" required>
+
+        <label for="tipo-evento">Tipo de Evento:</label>
+        <select id="tipo-evento">
+          <option value="Boda">Boda</option>
+          <option value="XV Años">XV Años</option>
+          <option value="Egreso">Egreso</option>
+          <option value="Institucional">Institucional</option>
+          <option value="Otro">Otro</option>
+        </select>
+
+        <label for="cuotas-evento">Cuotas:</label>
+        <select id="cuotas-evento">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+        </select>
+
+        <label for="fecha-evento">Fecha del Evento:</label>
+        <input type="date" id="fecha-evento" required>
+
+        <button type="submit">Guardar Datos</button>
+      </form>
+      <p id="mensaje-confirmacion" style="display: none;">Evento guardado correctamente.</p>
+    </section>
+
+    <!-- Página 2: Presupuestos Enviados -->
+    <section id="presupuestos-enviados" style="display: none;">
+      <h1>Presupuestos Enviados</h1>
+      <div id="lista-presupuestos"></div>
+    </section>
+
+    <!-- Página 3: Pagos en Curso -->
+    <section id="pagos-en-curso" style="display: none;">
+      <h1>Pagos en Curso</h1>
+      <div id="lista-pagos"></div>
+    </section>
+
+    <!-- Página 4: Pagos Completados -->
+    <section id="pagos-completados" style="display: none;">
+      <h1>Pagos Completados</h1>
+      <div id="lista-completados"></div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+<!-- En tu archivo index.html -->
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+<script>
+  // Configuración de Firebase (obtenla desde la consola de Firebase)
+  const firebaseConfig = {
+    apiKey: "AIzaSyBYvKc4koXqsuQlX4yfqBSIP0qhtYb0qx4",
+    authDomain: "gestion-de-presupuestos-1.firebaseapp.com",
+    projectId: "gestion-de-presupuestos-1",
+    storageBucket: "gestion-de-presupuestos-1.firebasestorage.app",
+    messagingSenderId: "223047402914",
+    appId: "1:223047402914:web:309c784aee4b0610a25efb"
+  };
+
+  // Inicializar Firebase
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore(app);
+</script>
+</body>
+</html>
