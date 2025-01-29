@@ -136,9 +136,12 @@ async function actualizarListaPagos() {
     div.innerHTML = `
       <p>${pago.Nombre} (${pago.Tipo}) - $${pago.Precio}</p>
       <div class="detalles">
+        <p>Cuotas: ${pago.Cuotas}</p>
         <p>Cuotas pagadas: <input type="number" min="0" max="${pago.Cuotas}" 
            value="${pago.CuotasPagadas || 0}" 
            onchange="actualizarCuotasPagadas(${index}, this.value)"></p>
+        <p>Monto pagado: $${pago.MontoPagado || 0}</p>
+        <p>Saldo restante: $${pago.SaldoRestante || pago.Precio}</p>
         <button onclick="completarPago(${index})">Completar</button>
       </div>
     `;
