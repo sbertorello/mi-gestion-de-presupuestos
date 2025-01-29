@@ -1,5 +1,5 @@
-// Reemplaza esta URL con la URL de tu Web App
-const API_URL = 'https://script.google.com/macros/s/AKfycbyW1LuNTofuyQ4OL6tcTRKR09j9OBxQbBBevpQ7bVzRfDXcv1EPGmSbiqOA0FMAT6Hr/exec';
+// URL de la Web App
+const API_URL = 'https://script.google.com/macros/s/TU-ID-DE-IMPLEMENTATION/exec';
 
 // Función para hacer peticiones a la API
 async function fetchAPI(operation, data = null) {
@@ -32,7 +32,6 @@ function mostrarSeccion(seccionId) {
   });
   document.getElementById(seccionId).style.display = "block";
   
-  // Actualizar la lista correspondiente
   switch(seccionId) {
     case 'presupuestos-enviados':
       actualizarListaPresupuestos();
@@ -46,7 +45,7 @@ function mostrarSeccion(seccionId) {
   }
 }
 
-// Guardar datos del presupuesto
+// Manejar el formulario de presupuestos
 document.getElementById("presupuesto-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const nombre = document.getElementById("nombre").value;
@@ -89,24 +88,18 @@ async function actualizarListaPresupuestos() {
     const div = document.createElement("div");
     div.classList.add("evento");
     div.innerHTML = `
-      <p>${presupuesto.Nombre} (${presupuesto.Tipo}) - $${presupuesto.Precio}</p>
+      <p>${presupuesto.Nombre} - ${presupuesto.Tipo} - $${presupuesto.Precio} - Fecha: ${presupuesto.Fecha}</p>
       <div class="detalles">
-        <p>Tipo de Evento: ${presupuesto.Tipo}</p>
-        <p>Fecha: ${presupuesto.Fecha}</p>
         <p>Cuotas: ${presupuesto.Cuotas}</p>
-        <button onclick="confirmarPresupuesto(${index})">Confirmar</button>
-        <button onclick="eliminarPresupuesto(${index})">Eliminar</button>
+        <button onclick="confirmarPresupuesto(${index})" class="confirmar">Confirmar</button>
+        <button onclick="eliminarPresupuesto(${index})" class="eliminar">Eliminar</button>
       </div>
     `;
-    div.addEventListener("click", (e) => {
-      if (!e.target.matches('button')) {
-        div.classList.toggle("active");
-      }
-    });
     lista.appendChild(div);
   });
 }
 
+// Funciones para manejar presupuestos
 async function confirmarPresupuesto(index) {
   const resultado = await fetchAPI('confirmarPresupuesto', { index });
   if (resultado !== null) {
@@ -133,38 +126,54 @@ async function actualizarListaPagos() {
   pagos.forEach((pago, index) => {
     const div = document.createElement("div");
     div.classList.add("evento");
+    
+    // Calcular saldo restante
+    const montoPorCuota = pago.Precio / pago.Cuotas;
+    const montoPagado = (pago.CuotasPagadas || 0) * montoPorCuota;
+    const saldoRestante = pago.Precio - montoPagado;
+    
+    // Crear inputs para cada cuota
+    let cuotasHTML = '<div class="cuotas-container">';
+    for (let i = 1; i <= pago.Cuotas; i++) {
+      cuotasHTML += `
+        <div class="cuota-input">
+          <label>Cuota ${i}:</label>
+          <input type="number" 
+                 value="${i <= (pago.CuotasPagadas || 0) ? montoPorCuota : 0}"
+                 onchange="actualizarCuota(${index}, ${i}, this.value)"
+                 ${i <= (pago.CuotasPagadas || 0) ? 'disabled' : ''}>
+        </div>
+      `;
+    }
+    cuotasHTML += '</div>';
+    
     div.innerHTML = `
-      <p>${pago.Nombre} (${pago.Tipo}) - $${pago.Precio}</p>
+      <p>${pago.Nombre} - ${pago.Tipo} - $${pago.Precio} - Fecha: ${pago.Fecha}</p>
       <div class="detalles">
-        <p>Cuotas: ${pago.Cuotas}</p>
-        <p>Cuotas pagadas: <input type="number" min="0" max="${pago.Cuotas}" 
-           value="${pago.CuotasPagadas || 0}" 
-           onchange="actualizarCuotasPagadas(${index}, this.value)"></p>
-        <p>Monto pagado: $${pago.MontoPagado || 0}</p>
-        <p>Saldo restante: $${pago.SaldoRestante || pago.Precio}</p>
-        <button onclick="confirmarPago(${index})">Confirmar Pago</button>
-        <button onclick="eliminarPago(${index})">Eliminar</button>
+        <p>Saldo Restante: $${saldoRestante}</p>
+        <p>Monto Pagado: $${montoPagado}</p>
+        ${cuotasHTML}
+        <button onclick="confirmarPago(${index})" class="confirmar">Confirmar Pago</button>
+        <button onclick="eliminarPago(${index})" class="eliminar">Eliminar</button>
       </div>
     `;
-    div.addEventListener("click", (e) => {
-      if (!e.target.matches('input, button')) {
-        div.classList.toggle("active");
-      }
-    });
     lista.appendChild(div);
   });
 }
 
-async function actualizarCuotasPagadas(index, cuotasPagadas) {
+// Función para actualizar una cuota individual
+async function actualizarCuota(index, numeroCuota, valor) {
   const resultado = await fetchAPI('actualizarPago', { 
     index, 
-    cuotasPagadas: parseInt(cuotasPagadas) 
+    cuotasPagadas: numeroCuota,
+    montoPagado: parseFloat(valor)
   });
   if (resultado !== null) {
     actualizarListaPagos();
   }
 }
 
+// Funciones para manejar pagos
 async function confirmarPago(index) {
   const resultado = await fetchAPI('confirmarPago', { index });
   if (resultado !== null) {
@@ -192,16 +201,12 @@ async function actualizarListaCompletados() {
     const div = document.createElement("div");
     div.classList.add("evento");
     div.innerHTML = `
-      <p>${completado.Nombre} (${completado.Tipo}) - $${completado.Precio}</p>
+      <p>${completado.Nombre} - ${completado.Tipo} - $${completado.Precio} - Fecha: ${completado.Fecha}</p>
       <div class="detalles">
-        <p>Fecha de evento: ${completado.Fecha}</p>
         <p>Fecha de completado: ${completado.FechaCompletado}</p>
-        <button onclick="eliminarPagoCompletado(${index})">Eliminar</button>
+        <button onclick="eliminarPagoCompletado(${index})" class="eliminar">Eliminar</button>
       </div>
     `;
-    div.addEventListener("click", () => {
-      div.classList.toggle("active");
-    });
     lista.appendChild(div);
   });
 }
