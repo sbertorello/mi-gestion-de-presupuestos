@@ -142,7 +142,8 @@ async function actualizarListaPagos() {
            onchange="actualizarCuotasPagadas(${index}, this.value)"></p>
         <p>Monto pagado: $${pago.MontoPagado || 0}</p>
         <p>Saldo restante: $${pago.SaldoRestante || pago.Precio}</p>
-        <button onclick="completarPago(${index})">Completar</button>
+        <button onclick="confirmarPago(${index})">Confirmar Pago</button>
+        <button onclick="eliminarPago(${index})">Eliminar</button>
       </div>
     `;
     div.addEventListener("click", (e) => {
@@ -164,11 +165,18 @@ async function actualizarCuotasPagadas(index, cuotasPagadas) {
   }
 }
 
-async function completarPago(index) {
-  const resultado = await fetchAPI('completarPago', { index });
+async function confirmarPago(index) {
+  const resultado = await fetchAPI('confirmarPago', { index });
   if (resultado !== null) {
     actualizarListaPagos();
     actualizarListaCompletados();
+  }
+}
+
+async function eliminarPago(index) {
+  const resultado = await fetchAPI('eliminarPago', { index });
+  if (resultado !== null) {
+    actualizarListaPagos();
   }
 }
 
@@ -180,7 +188,7 @@ async function actualizarListaCompletados() {
   const lista = document.getElementById("lista-completados");
   lista.innerHTML = "";
   
-  completados.forEach((completado) => {
+  completados.forEach((completado, index) => {
     const div = document.createElement("div");
     div.classList.add("evento");
     div.innerHTML = `
@@ -188,6 +196,7 @@ async function actualizarListaCompletados() {
       <div class="detalles">
         <p>Fecha de evento: ${completado.Fecha}</p>
         <p>Fecha de completado: ${completado.FechaCompletado}</p>
+        <button onclick="eliminarPagoCompletado(${index})">Eliminar</button>
       </div>
     `;
     div.addEventListener("click", () => {
@@ -195,6 +204,13 @@ async function actualizarListaCompletados() {
     });
     lista.appendChild(div);
   });
+}
+
+async function eliminarPagoCompletado(index) {
+  const resultado = await fetchAPI('eliminarPagoCompletado', { index });
+  if (resultado !== null) {
+    actualizarListaCompletados();
+  }
 }
 
 // Inicializar las listas al cargar la página
