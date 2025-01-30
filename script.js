@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbyW1LuNTofuyQ4OL6tcTRKR09j9OBxQbBBevpQ7bVzRfDXcv1EPGmSbiqOA0FMAT6Hr/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyW1LuNTofuyQ40L6tcTRKR09j9OBxQbBBevpQ7bVzRfDXcv1EPGmSbiqOA0FMAT6Hr/exec";
 
 // Espera a que el contenido de la página esté completamente cargado
 window.addEventListener("load", () => {
