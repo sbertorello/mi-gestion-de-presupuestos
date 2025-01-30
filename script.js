@@ -9,15 +9,23 @@ async function fetchAPI(operation, data = null) {
     }
     
     const response = await fetch(url);
+    
+    // Verificar si la respuesta es válida
+    if (!response.ok) {
+      throw new Error(`Error en la solicitud: ${response.statusText}`);
+    }
+    
     const result = await response.json();
     
+    // Verificar si la operación fue exitosa
     if (!result.success) {
       throw new Error(result.error || 'Error en la operación');
     }
     
+    // Retornar los datos si todo está bien
     return result.data;
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error en fetchAPI:', error);
     alert('Error al procesar la operación. Por favor, intenta nuevamente.');
     return null;
   }
