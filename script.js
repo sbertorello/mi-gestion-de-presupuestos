@@ -7,19 +7,17 @@ async function fetchAPI(operation, data = null) {
         if (data) {
             url.searchParams.append('data', JSON.stringify(data));
         }
-        
+
         const response = await fetch(url);
-        
         if (!response.ok) {
             throw new Error(`Error en la solicitud: ${response.statusText}`);
         }
-        
+
         const result = await response.json();
-        
         if (!result.success) {
             throw new Error(result.error || 'Error en la operación');
         }
-        
+
         return result.data;
     } catch (error) {
         console.error('Error en fetchAPI:', error);
@@ -33,8 +31,8 @@ function mostrarSeccion(seccionId) {
         seccion.style.display = "none";
     });
     document.getElementById(seccionId).style.display = "block";
-    
-    switch(seccionId) {
+
+    switch (seccionId) {
         case 'presupuestos-enviados':
             actualizarListaPresupuestos();
             break;
@@ -85,7 +83,7 @@ async function actualizarListaPresupuestos() {
 
     const lista = document.getElementById("lista-presupuestos");
     lista.innerHTML = "";
-    
+
     presupuestos.forEach((presupuesto, index) => {
         const div = document.createElement("div");
         div.classList.add("evento");
@@ -129,7 +127,7 @@ async function actualizarListaPagos() {
 
     const lista = document.getElementById("lista-pagos");
     lista.innerHTML = "";
-    
+
     pagos.forEach((pago, index) => {
         const montoPorCuota = pago.Precio / pago.Cuotas;
         const div = document.createElement("div");
@@ -144,13 +142,8 @@ async function actualizarListaPagos() {
                 <p>Saldo restante: $${pago.SaldoRestante || pago.Precio}</p>
                 <div class="cuota-input">
                     <label>Agregar pago:</label>
-                    <input type="number" 
-                           min="0" 
-                           max="${pago.SaldoRestante || pago.Precio}" 
-                           step="0.01">
-                    <button onclick="registrarPago(${index}, this.previousElementSibling.value)">
-                        Registrar pago
-                    </button>
+                    <input type="number" min="0" max="${pago.SaldoRestante || pago.Precio}" step="0.01">
+                    <button onclick="registrarPago(${index}, this.previousElementSibling.value)">Registrar pago</button>
                 </div>
                 <button onclick="confirmarPago(${index})">Finalizar pago</button>
                 <button onclick="eliminarPago(${index})">Eliminar</button>
@@ -170,12 +163,12 @@ async function registrarPago(index, monto) {
         alert('Por favor ingresa un monto válido');
         return;
     }
-    
+
     const resultado = await fetchAPI('actualizarCuota', {
         index,
         monto: parseFloat(monto)
     });
-    
+
     if (resultado !== null) {
         actualizarListaPagos();
     }
@@ -202,7 +195,7 @@ async function actualizarListaCompletados() {
 
     const lista = document.getElementById("lista-completados");
     lista.innerHTML = "";
-    
+
     completados.forEach((completado, index) => {
         const div = document.createElement("div");
         div.classList.add("evento");
