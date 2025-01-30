@@ -1,10 +1,7 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbyW1LuNTofuyQ4OL6tcTRKR09j9OBxQbBBevpQ7bVzRfDXcv1EPGmSbiqOA0FMAT6Hr/exec';
 
 /**
- * Función genérica para realizar solicitudes a la API.
- * @param {string} operation - La operación a ejecutar en la API.
- * @param {object} data - Los datos a enviar (opcional).
- * @returns {Promise<any>} - Respuesta de la API o null en caso de error.
+ * Función para interactuar con la API de Google Apps Script
  */
 async function fetchAPI(operation, data = null) {
     try {
@@ -16,7 +13,7 @@ async function fetchAPI(operation, data = null) {
 
         const response = await fetch(url);
         const result = await response.json();
-        
+
         if (!result.success) {
             throw new Error(result.error || 'Error en la operación');
         }
@@ -24,14 +21,13 @@ async function fetchAPI(operation, data = null) {
         return result.data;
     } catch (error) {
         console.error('Error en fetchAPI:', error);
-        alert('Error al procesar la operación. Por favor, intenta nuevamente.');
+        alert('Error al procesar la operación. Inténtalo nuevamente.');
         return null;
     }
 }
 
 /**
- * Muestra la sección seleccionada y actualiza las listas según corresponda.
- * @param {string} seccionId - ID de la sección a mostrar.
+ * Función para mostrar la sección seleccionada y actualizar listas cuando sea necesario
  */
 function mostrarSeccion(seccionId) {
     document.querySelectorAll('section').forEach(seccion => {
@@ -56,13 +52,13 @@ function mostrarSeccion(seccionId) {
     }
 }
 
-// Manejador del formulario de presupuestos
+// Evento para manejar el envío del formulario de presupuestos
 document.getElementById('presupuesto-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    
+
     const nombre = document.getElementById('nombre').value.trim();
     const precio = parseFloat(document.getElementById('precio').value);
-    const tipo = document.getElementById('tipo').value.trim();
+    const tipo = document.getElementById('tipo').value;
     const cuotas = parseInt(document.getElementById('cuotas').value);
     const fecha = document.getElementById('fecha').value;
 
@@ -85,11 +81,15 @@ document.getElementById('presupuesto-form').addEventListener('submit', async (e)
 
     if (resultado !== null) {
         document.getElementById('presupuesto-form').reset();
-        mostrarMensaje('Presupuesto agregado correctamente.');
+        document.getElementById('mensaje-confirmacion').style.display = 'block';
+        setTimeout(() => {
+            document.getElementById('mensaje-confirmacion').style.display = 'none';
+        }, 3000);
         actualizarListaPresupuestos();
     }
 });
 
+// Función para actualizar la lista de presupuestos
 async function actualizarListaPresupuestos() {
     const presupuestos = await fetchAPI('getPresupuestos');
     if (!presupuestos) return;
@@ -109,30 +109,8 @@ async function actualizarListaPresupuestos() {
                 <button onclick="eliminarPresupuesto(${index})">Eliminar</button>
             </div>
         `;
-
-        div.addEventListener('click', (e) => {
-            if (!e.target.matches('button')) {
-                div.classList.toggle('active');
-            }
-        });
-
         lista.appendChild(div);
     });
-}
-
-async function confirmarPresupuesto(index) {
-    const resultado = await fetchAPI('confirmarPresupuesto', { index });
-    if (resultado !== null) {
-        actualizarListaPresupuestos();
-        actualizarListaPagos();
-    }
-}
-
-async function eliminarPresupuesto(index) {
-    const resultado = await fetchAPI('eliminarPresupuesto', { index });
-    if (resultado !== null) {
-        actualizarListaPresupuestos();
-    }
 }
 
 async function actualizarListaPagos() {
@@ -149,45 +127,37 @@ async function actualizarListaPagos() {
         div.innerHTML = `
             <p>${pago.Nombre} (${pago.Tipo}) - $${pago.Precio}</p>
             <div class="detalles">
+                <p>Fecha: ${pago.Fecha}</p>
+                <p>Cuotas: ${pago.Cuotas}</p>
+                <p>Monto por cuota: $${montoPorCuota.toFixed(2)}</p>
+                <p>Monto pagado: $${pago.MontoPagado || 0}</p>
                 <p>Saldo restante: $${pago.SaldoRestante || pago.Precio}</p>
                 <div class="cuota-input">
                     <label>Agregar pago:</label>
-                    <input type="number" min="0" max="${pago.SaldoRestante || pago.Precio}" step="0.01">
-                    <button onclick="registrarPago(${index}, this.previousElementSibling.value)">Registrar pago</button>
+                    <input type="number" min="0" max="${pago.SaldoRestante || pago.Precio}" step="0.01" id="pago-${index}">
+                    <button onclick="registrarPago(${index})">Registrar pago</button>
                 </div>
                 <button onclick="confirmarPago(${index})">Finalizar pago</button>
                 <button onclick="eliminarPago(${index})">Eliminar</button>
             </div>
         `;
-
-        div.addEventListener('click', (e) => {
-            if (!e.target.matches('input, button')) {
-                div.classList.toggle('active');
-            }
-        });
-
         lista.appendChild(div);
     });
 }
 
-async function registrarPago(index, monto) {
-    monto = parseFloat(monto);
-    if (isNaN(monto) || monto <= 0) {
-        alert('Por favor, ingresa un monto válido.');
+async function registrarPago(index) {
+    const input = document.getElementById(`pago-${index}`);
+    const monto = parseFloat(input.value);
+
+    if (!monto || monto <= 0) {
+        alert('Por favor ingresa un monto válido.');
         return;
     }
 
     const resultado = await fetchAPI('actualizarCuota', { index, monto });
-    if (resultado !== null) {
-        actualizarListaPagos();
-    }
-}
 
-async function confirmarPago(index) {
-    const resultado = await fetchAPI('confirmarPago', { index });
     if (resultado !== null) {
         actualizarListaPagos();
-        actualizarListaCompletados();
     }
 }
 
@@ -203,25 +173,16 @@ async function actualizarListaCompletados() {
         div.classList.add('evento');
         div.innerHTML = `
             <p>${completado.Nombre} (${completado.Tipo}) - $${completado.Precio}</p>
-            <button onclick="eliminarPagoCompletado(${index})">Eliminar</button>
+            <div class="detalles">
+                <p>Fecha de evento: ${completado.Fecha}</p>
+                <p>Fecha de completado: ${completado.FechaCompletado}</p>
+                <button onclick="eliminarPagoCompletado(${index})">Eliminar</button>
+            </div>
         `;
-
         lista.appendChild(div);
     });
 }
 
-async function eliminarPagoCompletado(index) {
-    const resultado = await fetchAPI('eliminarPagoCompletado', { index });
-    if (resultado !== null) {
-        actualizarListaCompletados();
-    }
-}
-
-function mostrarMensaje(mensaje) {
-    alert(mensaje);
-}
-
-// Inicializar las listas al cargar la página
 document.addEventListener('DOMContentLoaded', () => {
     actualizarListaPresupuestos();
     actualizarListaPagos();
