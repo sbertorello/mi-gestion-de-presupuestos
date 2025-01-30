@@ -9,8 +9,11 @@ async function fetchAPI(operation, data = null) {
         }
 
         const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Error en la solicitud: ${response.status}`);
+        }
+
         const result = await response.json();
-        
         if (!result.success) {
             throw new Error(result.error || 'Error en la operación');
         }
@@ -24,32 +27,28 @@ async function fetchAPI(operation, data = null) {
 }
 
 function mostrarSeccion(seccionId) {
-    // Primero ocultar todas las secciones
     document.querySelectorAll('section').forEach(seccion => {
         seccion.style.display = 'none';
     });
     
-    // Mostrar la sección seleccionada
     const seccionSeleccionada = document.getElementById(seccionId);
     if (seccionSeleccionada) {
         seccionSeleccionada.style.display = 'block';
-    }
 
-    // Actualizar la lista correspondiente
-    switch (seccionId) {
-        case 'presupuestos-enviados':
-            actualizarListaPresupuestos();
-            break;
-        case 'pagos-en-curso':
-            actualizarListaPagos();
-            break;
-        case 'pagos-completados':
-            actualizarListaCompletados();
-            break;
+        switch (seccionId) {
+            case 'presupuestos-enviados':
+                actualizarListaPresupuestos();
+                break;
+            case 'pagos-en-curso':
+                actualizarListaPagos();
+                break;
+            case 'pagos-completados':
+                actualizarListaCompletados();
+                break;
+        }
     }
 }
 
-// Manejador del formulario de presupuestos
 document.getElementById('presupuesto-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -59,7 +58,7 @@ document.getElementById('presupuesto-form').addEventListener('submit', async (e)
     const cuotas = parseInt(document.getElementById('cuotas').value);
     const fecha = document.getElementById('fecha').value;
 
-    if (!nombre || !precio || !tipo || !cuotas || !fecha) {
+    if (!nombre || isNaN(precio) || !tipo || isNaN(cuotas) || !fecha) {
         alert('Por favor, completa todos los campos correctamente.');
         return;
     }
@@ -89,7 +88,7 @@ document.getElementById('presupuesto-form').addEventListener('submit', async (e)
 
 async function actualizarListaPresupuestos() {
     const presupuestos = await fetchAPI('getPresupuestos');
-    if (!presupuestos) return;
+    if (!presupuestos || !Array.isArray(presupuestos)) return;
 
     const lista = document.getElementById('lista-presupuestos');
     lista.innerHTML = '';
@@ -108,7 +107,6 @@ async function actualizarListaPresupuestos() {
             </div>
         `;
         
-        // Agregar el evento click solo al div principal, no a los botones
         div.addEventListener('click', (e) => {
             if (!e.target.matches('button')) {
                 div.classList.toggle('active');
@@ -120,7 +118,7 @@ async function actualizarListaPresupuestos() {
 }
 
 async function confirmarPresupuesto(index) {
-    if (typeof index !== 'number') {
+    if (typeof index !== 'number' || isNaN(index)) {
         console.error('Índice inválido:', index);
         return;
     }
@@ -133,7 +131,7 @@ async function confirmarPresupuesto(index) {
 }
 
 async function eliminarPresupuesto(index) {
-    if (typeof index !== 'number') {
+    if (typeof index !== 'number' || isNaN(index)) {
         console.error('Índice inválido:', index);
         return;
     }
@@ -146,13 +144,16 @@ async function eliminarPresupuesto(index) {
 
 async function actualizarListaPagos() {
     const pagos = await fetchAPI('getPagosEnCurso');
-    if (!pagos) return;
+    if (!pagos || !Array.isArray(pagos)) return;
 
     const lista = document.getElementById('lista-pagos');
     lista.innerHTML = '';
 
     pagos.forEach((pago, index) => {
         const montoPorCuota = pago.Precio / pago.Cuotas;
+        const saldoRestante = parseFloat(pago.SaldoRestante || pago.Precio);
+        const montoPagado = parseFloat(pago.MontoPagado || 0);
+        
         const div = document.createElement('div');
         div.classList.add('evento');
         div.innerHTML = `
@@ -161,11 +162,11 @@ async function actualizarListaPagos() {
                 <p>Fecha: ${pago.Fecha}</p>
                 <p>Cuotas: ${pago.Cuotas}</p>
                 <p>Monto por cuota: $${montoPorCuota.toFixed(2)}</p>
-                <p>Monto pagado: $${pago.MontoPagado || 0}</p>
-                <p>Saldo restante: $${pago.SaldoRestante || pago.Precio}</p>
+                <p>Monto pagado: $${montoPagado.toFixed(2)}</p>
+                <p>Saldo restante: $${saldoRestante.toFixed(2)}</p>
                 <div class="cuota-input">
                     <label>Agregar pago:</label>
-                    <input type="number" min="0" max="${pago.SaldoRestante || pago.Precio}" step="0.01">
+                    <input type="number" min="0" max="${saldoRestante}" step="0.01">
                     <button onclick="registrarPago(${index}, this.previousElementSibling.value)">Registrar pago</button>
                 </div>
                 <button onclick="confirmarPago(${index})">Finalizar pago</button>
@@ -184,22 +185,33 @@ async function actualizarListaPagos() {
 }
 
 async function registrarPago(index, monto) {
-    if (!monto || monto <= 0) {
+    const montoNumerico = parseFloat(monto);
+    if (isNaN(montoNumerico) || montoNumerico <= 0) {
         alert('Por favor ingresa un monto válido');
         return;
     }
 
-    const resultado = await fetchAPI('actualizarCuota', {
-        index,
-        monto: parseFloat(monto)
-    });
+    try {
+        const resultado = await fetchAPI('actualizarCuota', {
+            index: parseInt(index),
+            monto: montoNumerico
+        });
 
-    if (resultado !== null) {
-        actualizarListaPagos();
+        if (resultado !== null) {
+            actualizarListaPagos();
+        }
+    } catch (error) {
+        console.error('Error al registrar pago:', error);
+        alert('Error al registrar el pago. Por favor, intenta nuevamente.');
     }
 }
 
 async function confirmarPago(index) {
+    if (typeof index !== 'number' || isNaN(index)) {
+        console.error('Índice inválido:', index);
+        return;
+    }
+
     const resultado = await fetchAPI('confirmarPago', { index });
     if (resultado !== null) {
         actualizarListaPagos();
@@ -208,6 +220,11 @@ async function confirmarPago(index) {
 }
 
 async function eliminarPago(index) {
+    if (typeof index !== 'number' || isNaN(index)) {
+        console.error('Índice inválido:', index);
+        return;
+    }
+
     const resultado = await fetchAPI('eliminarPago', { index });
     if (resultado !== null) {
         actualizarListaPagos();
@@ -216,7 +233,7 @@ async function eliminarPago(index) {
 
 async function actualizarListaCompletados() {
     const completados = await fetchAPI('getPagosCompletados');
-    if (!completados) return;
+    if (!completados || !Array.isArray(completados)) return;
 
     const lista = document.getElementById('lista-completados');
     lista.innerHTML = '';
@@ -244,13 +261,17 @@ async function actualizarListaCompletados() {
 }
 
 async function eliminarPagoCompletado(index) {
+    if (typeof index !== 'number' || isNaN(index)) {
+        console.error('Índice inválido:', index);
+        return;
+    }
+
     const resultado = await fetchAPI('eliminarPagoCompletado', { index });
     if (resultado !== null) {
         actualizarListaCompletados();
     }
 }
 
-// Inicializar las listas cuando se carga la página
 document.addEventListener('DOMContentLoaded', () => {
     actualizarListaPresupuestos();
     actualizarListaPagos();
