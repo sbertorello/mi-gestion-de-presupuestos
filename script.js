@@ -2,7 +2,6 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyW1LuNTofuyQ40L6tcTRKR
 
 // Espera a que el contenido de la página esté completamente cargado
 window.addEventListener("load", () => {
-    // Agregar presupuesto
     document.getElementById("presupuesto-form").addEventListener("submit", async (event) => {
         event.preventDefault();
 
@@ -18,7 +17,8 @@ window.addEventListener("load", () => {
             const response = await fetch(API_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ operation: "addPresupuesto", data: data })
+                body: JSON.stringify({ operation: "addPresupuesto", data: data }),
+                mode: "cors"
             });
 
             const result = await response.json();
@@ -34,13 +34,14 @@ window.addEventListener("load", () => {
         }
     });
 
-    // Cargar presupuestos
+    // Función para cargar presupuestos
     async function cargarPresupuestos() {
         try {
             const response = await fetch(API_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ operation: "getPresupuestos" })
+                body: JSON.stringify({ operation: "getPresupuestos" }),
+                mode: "cors"
             });
 
             const result = await response.json();
@@ -65,13 +66,14 @@ window.addEventListener("load", () => {
         }
     }
 
-    // Eliminar presupuesto
+    // Función para eliminar un presupuesto
     async function eliminarPresupuesto(index) {
         try {
             const response = await fetch(API_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ operation: "eliminarPresupuesto", data: { index } })
+                body: JSON.stringify({ operation: "eliminarPresupuesto", data: { index } }),
+                mode: "cors"
             });
 
             const result = await response.json();
@@ -79,7 +81,7 @@ window.addEventListener("load", () => {
                 alert("Presupuesto eliminado.");
                 cargarPresupuestos();
             } else {
-                alert("Error al eliminar.");
+                alert("Error al eliminar presupuesto.");
             }
         } catch (error) {
             console.error("Error en fetch:", error);
@@ -89,3 +91,11 @@ window.addEventListener("load", () => {
     // Cargar presupuestos al inicio
     cargarPresupuestos();
 });
+
+// Función para mostrar las secciones del menú
+function mostrarSeccion(id) {
+    document.querySelectorAll("main section").forEach(section => {
+        section.style.display = "none";
+    });
+    document.getElementById(id).style.display = "block";
+}
