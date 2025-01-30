@@ -9,11 +9,8 @@ async function fetchAPI(operation, data = null) {
         }
 
         const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`Error en la solicitud: ${response.statusText}`);
-        }
-
         const result = await response.json();
+        
         if (!result.success) {
             throw new Error(result.error || 'Error en la operación');
         }
@@ -27,11 +24,18 @@ async function fetchAPI(operation, data = null) {
 }
 
 function mostrarSeccion(seccionId) {
-    document.querySelectorAll("section").forEach((seccion) => {
-        seccion.style.display = "none";
+    // Primero ocultar todas las secciones
+    document.querySelectorAll('section').forEach(seccion => {
+        seccion.style.display = 'none';
     });
-    document.getElementById(seccionId).style.display = "block";
+    
+    // Mostrar la sección seleccionada
+    const seccionSeleccionada = document.getElementById(seccionId);
+    if (seccionSeleccionada) {
+        seccionSeleccionada.style.display = 'block';
+    }
 
+    // Actualizar la lista correspondiente
     switch (seccionId) {
         case 'presupuestos-enviados':
             actualizarListaPresupuestos();
@@ -45,35 +49,41 @@ function mostrarSeccion(seccionId) {
     }
 }
 
-document.getElementById("presupuesto-form").addEventListener("submit", async (e) => {
+// Manejador del formulario de presupuestos
+document.getElementById('presupuesto-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const nombre = document.getElementById("nombre").value;
-    const precio = parseFloat(document.getElementById("precio").value);
-    const tipo = document.getElementById("tipo").value;
-    const cuotas = parseInt(document.getElementById("cuotas").value);
-    const fecha = document.getElementById("fecha").value;
+    
+    const nombre = document.getElementById('nombre').value.trim();
+    const precio = parseFloat(document.getElementById('precio').value);
+    const tipo = document.getElementById('tipo').value;
+    const cuotas = parseInt(document.getElementById('cuotas').value);
+    const fecha = document.getElementById('fecha').value;
 
-    if (nombre && precio && tipo && cuotas && fecha) {
-        const resultado = await fetchAPI('addPresupuesto', {
-            Nombre: nombre,
-            Precio: precio,
-            Tipo: tipo,
-            Cuotas: cuotas,
-            Fecha: fecha,
-            SaldoRestante: precio,
-            MontoPagado: 0
-        });
+    if (!nombre || !precio || !tipo || !cuotas || !fecha) {
+        alert('Por favor, completa todos los campos correctamente.');
+        return;
+    }
 
-        if (resultado !== null) {
-            document.getElementById("presupuesto-form").reset();
-            document.getElementById("mensaje-confirmacion").style.display = "block";
-            setTimeout(() => {
-                document.getElementById("mensaje-confirmacion").style.display = "none";
-            }, 3000);
-            actualizarListaPresupuestos();
-        }
-    } else {
-        alert("Por favor, completa todos los campos.");
+    const nuevoPresupuesto = {
+        Nombre: nombre,
+        Precio: precio,
+        Tipo: tipo,
+        Cuotas: cuotas,
+        Fecha: fecha,
+        SaldoRestante: precio,
+        MontoPagado: 0
+    };
+
+    const resultado = await fetchAPI('addPresupuesto', nuevoPresupuesto);
+
+    if (resultado !== null) {
+        document.getElementById('presupuesto-form').reset();
+        const mensajeConfirmacion = document.getElementById('mensaje-confirmacion');
+        mensajeConfirmacion.style.display = 'block';
+        setTimeout(() => {
+            mensajeConfirmacion.style.display = 'none';
+        }, 3000);
+        actualizarListaPresupuestos();
     }
 });
 
@@ -81,12 +91,12 @@ async function actualizarListaPresupuestos() {
     const presupuestos = await fetchAPI('getPresupuestos');
     if (!presupuestos) return;
 
-    const lista = document.getElementById("lista-presupuestos");
-    lista.innerHTML = "";
+    const lista = document.getElementById('lista-presupuestos');
+    lista.innerHTML = '';
 
     presupuestos.forEach((presupuesto, index) => {
-        const div = document.createElement("div");
-        div.classList.add("evento");
+        const div = document.createElement('div');
+        div.classList.add('evento');
         div.innerHTML = `
             <p>${presupuesto.Nombre} (${presupuesto.Tipo}) - $${presupuesto.Precio}</p>
             <div class="detalles">
@@ -97,16 +107,24 @@ async function actualizarListaPresupuestos() {
                 <button onclick="eliminarPresupuesto(${index})">Eliminar</button>
             </div>
         `;
-        div.addEventListener("click", (e) => {
+        
+        // Agregar el evento click solo al div principal, no a los botones
+        div.addEventListener('click', (e) => {
             if (!e.target.matches('button')) {
-                div.classList.toggle("active");
+                div.classList.toggle('active');
             }
         });
+        
         lista.appendChild(div);
     });
 }
 
 async function confirmarPresupuesto(index) {
+    if (typeof index !== 'number') {
+        console.error('Índice inválido:', index);
+        return;
+    }
+    
     const resultado = await fetchAPI('confirmarPresupuesto', { index });
     if (resultado !== null) {
         actualizarListaPresupuestos();
@@ -115,6 +133,11 @@ async function confirmarPresupuesto(index) {
 }
 
 async function eliminarPresupuesto(index) {
+    if (typeof index !== 'number') {
+        console.error('Índice inválido:', index);
+        return;
+    }
+    
     const resultado = await fetchAPI('eliminarPresupuesto', { index });
     if (resultado !== null) {
         actualizarListaPresupuestos();
@@ -125,13 +148,13 @@ async function actualizarListaPagos() {
     const pagos = await fetchAPI('getPagosEnCurso');
     if (!pagos) return;
 
-    const lista = document.getElementById("lista-pagos");
-    lista.innerHTML = "";
+    const lista = document.getElementById('lista-pagos');
+    lista.innerHTML = '';
 
     pagos.forEach((pago, index) => {
         const montoPorCuota = pago.Precio / pago.Cuotas;
-        const div = document.createElement("div");
-        div.classList.add("evento");
+        const div = document.createElement('div');
+        div.classList.add('evento');
         div.innerHTML = `
             <p>${pago.Nombre} (${pago.Tipo}) - $${pago.Precio}</p>
             <div class="detalles">
@@ -149,11 +172,13 @@ async function actualizarListaPagos() {
                 <button onclick="eliminarPago(${index})">Eliminar</button>
             </div>
         `;
-        div.addEventListener("click", (e) => {
+        
+        div.addEventListener('click', (e) => {
             if (!e.target.matches('input, button')) {
-                div.classList.toggle("active");
+                div.classList.toggle('active');
             }
         });
+        
         lista.appendChild(div);
     });
 }
@@ -193,12 +218,12 @@ async function actualizarListaCompletados() {
     const completados = await fetchAPI('getPagosCompletados');
     if (!completados) return;
 
-    const lista = document.getElementById("lista-completados");
-    lista.innerHTML = "";
+    const lista = document.getElementById('lista-completados');
+    lista.innerHTML = '';
 
     completados.forEach((completado, index) => {
-        const div = document.createElement("div");
-        div.classList.add("evento");
+        const div = document.createElement('div');
+        div.classList.add('evento');
         div.innerHTML = `
             <p>${completado.Nombre} (${completado.Tipo}) - $${completado.Precio}</p>
             <div class="detalles">
@@ -207,11 +232,13 @@ async function actualizarListaCompletados() {
                 <button onclick="eliminarPagoCompletado(${index})">Eliminar</button>
             </div>
         `;
-        div.addEventListener("click", (e) => {
+        
+        div.addEventListener('click', (e) => {
             if (!e.target.matches('button')) {
-                div.classList.toggle("active");
+                div.classList.toggle('active');
             }
         });
+        
         lista.appendChild(div);
     });
 }
@@ -223,6 +250,7 @@ async function eliminarPagoCompletado(index) {
     }
 }
 
+// Inicializar las listas cuando se carga la página
 document.addEventListener('DOMContentLoaded', () => {
     actualizarListaPresupuestos();
     actualizarListaPagos();
