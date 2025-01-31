@@ -60,7 +60,12 @@ function guardarEnGoogleSheets(data) {
             'Content-Type': 'application/json'
         }
     })
-    .then(response => response.text())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Error en la solicitud');
+        }
+        return response.json();
+    })
     .then(result => {
         console.log(result); // Mostrar el resultado en la consola
         alert('Datos guardados correctamente'); // Mostrar un mensaje de éxito
