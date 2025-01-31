@@ -1,26 +1,43 @@
 // script.js
 
+// Función para mostrar u ocultar secciones
+function mostrarSeccion(seccionId) {
+    // Ocultar todas las secciones
+    document.querySelectorAll('main section').forEach(seccion => {
+        seccion.style.display = 'none';
+    });
+
+    // Mostrar la sección seleccionada
+    const seccion = document.getElementById(seccionId);
+    if (seccion) {
+        seccion.style.display = 'block';
+    }
+}
+
+// Mostrar la sección de "Presupuestos" por defecto al cargar la página
+mostrarSeccion('presupuestos');
+
+// Lógica para enviar datos del formulario a Google Sheets
 document.addEventListener('DOMContentLoaded', function() {
-    // Asegurarse de que el DOM esté completamente cargado antes de ejecutar el código
-    const formulario = document.getElementById('presupuestoForm');
+    const formulario = document.getElementById('presupuesto-form');
 
     if (formulario) {
         formulario.addEventListener('submit', function(event) {
             event.preventDefault(); // Evita que el formulario se envíe de forma tradicional
 
             // Obtener los valores del formulario
-            const nombreEvento = document.getElementById('nombreEvento').value;
-            const precio = document.getElementById('precio').value;
-            const tipoEvento = document.getElementById('tipoEvento').value;
-            const cuotas = document.getElementById('cuotas').value;
-            const fechaEvento = document.getElementById('fechaEvento').value;
+            const nombreEvento = document.getElementById('nombre-evento').value;
+            const precioEvento = document.getElementById('precio-evento').value;
+            const tipoEvento = document.getElementById('tipo-evento').value;
+            const cuotasEvento = document.getElementById('cuotas-evento').value;
+            const fechaEvento = document.getElementById('fecha-evento').value;
 
             // Crear un objeto con los datos
             const data = {
                 nombreEvento: nombreEvento,
-                precio: precio,
+                precioEvento: precioEvento,
                 tipoEvento: tipoEvento,
-                cuotas: cuotas,
+                cuotasEvento: cuotasEvento,
                 fechaEvento: fechaEvento
             };
 
@@ -28,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
             guardarEnGoogleSheets(data);
         });
     } else {
-        console.error('El formulario con ID "presupuestoForm" no fue encontrado.');
+        console.error('El formulario con ID "presupuesto-form" no fue encontrado.');
     }
 });
 
@@ -47,7 +64,13 @@ function guardarEnGoogleSheets(data) {
     .then(result => {
         console.log(result); // Mostrar el resultado en la consola
         alert('Datos guardados correctamente'); // Mostrar un mensaje de éxito
-        document.getElementById('presupuestoForm').reset(); // Limpiar el formulario
+        document.getElementById('presupuesto-form').reset(); // Limpiar el formulario
+
+        // Mostrar el mensaje de confirmación
+        const mensajeConfirmacion = document.getElementById('mensaje-confirmacion');
+        if (mensajeConfirmacion) {
+            mensajeConfirmacion.style.display = 'block';
+        }
     })
     .catch(error => {
         console.error('Error:', error); // Mostrar el error en la consola
