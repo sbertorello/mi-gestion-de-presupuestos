@@ -1,64 +1,49 @@
-document.addEventListener("DOMContentLoaded", function () {
-    mostrarSeccion('presupuestos'); // Mostrar sección por defecto
+const url = 'https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec';
 
-    document.getElementById("presupuesto-form").addEventListener("submit", function (event) {
-        event.preventDefault(); // Evita que el formulario recargue la página
-
-        // Capturar datos del formulario
-        let nombreEvento = document.getElementById("nombre-evento").value;
-        let precioEvento = document.getElementById("precio-evento").value;
-        let tipoEvento = document.getElementById("tipo-evento").value;
-        let cuotasEvento = document.getElementById("cuotas-evento").value;
-        let fechaEvento = document.getElementById("fecha-evento").value;
-
-        // Enviar datos a Google Apps Script
-        fetch("https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec", {
-            method: "POST",
-            body: JSON.stringify({
-                nombre: nombreEvento,
-                precio: precioEvento,
-                tipo: tipoEvento,
-                cuotas: cuotasEvento,
-                fecha: fechaEvento,
-                estado: "Pendiente"
-            }),
-            headers: {
-                "Content-Type": "application/json"
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === "success") {
-                document.getElementById("mensaje-confirmacion").style.display = "block";
-                document.getElementById("presupuesto-form").reset();
-            } else {
-                alert("Error al guardar el presupuesto.");
-            }
-        })
-        .catch(error => console.error("Error:", error));
-    });
-
-    // Cargar presupuestos guardados al abrir la página
-    cargarPresupuestos();
-});
-
-function cargarPresupuestos() {
-    fetch("https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec")
-        .then(response => response.json())
-        .then(data => {
-            let lista = document.getElementById("lista-presupuestos");
-            lista.innerHTML = "";
-
-            data.presupuestos.forEach(presupuesto => {
-                let div = document.createElement("div");
-                div.classList.add("evento");
-                div.innerHTML = `
-                    <strong>${presupuesto.nombre}</strong> - ${presupuesto.tipo} - $${presupuesto.precio} 
-                    <br> ${presupuesto.cuotas} cuota(s) - Fecha: ${presupuesto.fecha}
-                    <br> Estado: ${presupuesto.estado}
-                `;
-                lista.appendChild(div);
-            });
-        })
-        .catch(error => console.error("Error al cargar presupuestos:", error));
+// Mostrar secciones según la navegación
+function mostrarSeccion(seccion) {
+  // Ocultar todas las secciones
+  const secciones = document.querySelectorAll('main section');
+  secciones.forEach((seccion) => {
+    seccion.style.display = 'none';
+  });
+  
+  // Mostrar la sección seleccionada
+  const seccionSeleccionada = document.getElementById(seccion);
+  if (seccionSeleccionada) {
+    seccionSeleccionada.style.display = 'block';
+  }
 }
+
+// Enviar datos del formulario a la hoja de cálculo
+document.getElementById('presupuesto-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const nombreEvento = document.getElementById('nombre-evento').value;
+  const precioEvento = document.getElementById('precio-evento').value;
+  const tipoEvento = document.getElementById('tipo-evento').value;
+  const cuotasEvento = document.getElementById('cuotas-evento').value;
+  const fechaEvento = document.getElementById('fecha-evento').value;
+
+  const data = {
+    nombre: nombreEvento,
+    precio: precioEvento,
+    tipo: tipoEvento,
+    cuotas: cuotasEvento,
+    fecha: fechaEvento
+  };
+
+  // Llamar a Google Apps Script para guardar los datos en la hoja de cálculo
+  fetch(url + '?action=guardar_presupuesto', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      document.getElementById('mensaje-confirmacion').style.display = 'block';
+      document.getElementById('presupuesto-form').reset();
+    }
+  })
+  .catch(error => console.error('Error:', error));
+});
