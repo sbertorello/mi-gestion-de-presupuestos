@@ -68,13 +68,17 @@ function guardarEnGoogleSheets(data) {
     })
     .then(result => {
         console.log(result); // Mostrar el resultado en la consola
-        alert('Datos guardados correctamente'); // Mostrar un mensaje de éxito
-        document.getElementById('presupuesto-form').reset(); // Limpiar el formulario
+        if (result.success) {
+            alert(result.message); // Mostrar un mensaje de éxito
+            document.getElementById('presupuesto-form').reset(); // Limpiar el formulario
 
-        // Mostrar el mensaje de confirmación
-        const mensajeConfirmacion = document.getElementById('mensaje-confirmacion');
-        if (mensajeConfirmacion) {
-            mensajeConfirmacion.style.display = 'block';
+            // Mostrar el mensaje de confirmación
+            const mensajeConfirmacion = document.getElementById('mensaje-confirmacion');
+            if (mensajeConfirmacion) {
+                mensajeConfirmacion.style.display = 'block';
+            }
+        } else {
+            alert(result.message); // Mostrar un mensaje de error
         }
     })
     .catch(error => {
