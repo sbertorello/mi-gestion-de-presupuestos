@@ -1,49 +1,44 @@
-const url = 'https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec';
+document.getElementById("presupuesto-form").addEventListener("submit", function(event) {
+  event.preventDefault();
 
-// Mostrar secciones según la navegación
-function mostrarSeccion(seccion) {
-  // Ocultar todas las secciones
-  const secciones = document.querySelectorAll('main section');
-  secciones.forEach((seccion) => {
-    seccion.style.display = 'none';
-  });
-  
-  // Mostrar la sección seleccionada
-  const seccionSeleccionada = document.getElementById(seccion);
-  if (seccionSeleccionada) {
-    seccionSeleccionada.style.display = 'block';
+  // Obtener valores del formulario
+  var nombre = document.getElementById("nombre-evento").value;
+  var precio = document.getElementById("precio-evento").value;
+  var tipo = document.getElementById("tipo-evento").value;
+  var cuotas = document.getElementById("cuotas-evento").value;
+  var fecha = document.getElementById("fecha-evento").value;
+
+  // Verificar que todos los campos estén completos
+  if (nombre === "" || precio === "" || fecha === "") {
+    alert("Por favor, completa todos los campos.");
+    return;
   }
-}
 
-// Enviar datos del formulario a la hoja de cálculo
-document.getElementById('presupuesto-form').addEventListener('submit', function(e) {
-  e.preventDefault();
+  // URL de Google Apps Script
+  var url = "TU_URL_DE_LA_APP_AQUÍ";
 
-  const nombreEvento = document.getElementById('nombre-evento').value;
-  const precioEvento = document.getElementById('precio-evento').value;
-  const tipoEvento = document.getElementById('tipo-evento').value;
-  const cuotasEvento = document.getElementById('cuotas-evento').value;
-  const fechaEvento = document.getElementById('fecha-evento').value;
+  // Enviar datos a Google Sheets
+  fetch(url, {
+    method: "POST",
+    mode: "no-cors",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      nombre: nombre,
+      precio: precio,
+      tipo: tipo,
+      cuotas: cuotas,
+      fecha: fecha
+    })
+  }).then(() => {
+    // Mostrar mensaje de confirmación
+    document.getElementById("mensaje-confirmacion").style.display = "block";
 
-  const data = {
-    nombre: nombreEvento,
-    precio: precioEvento,
-    tipo: tipoEvento,
-    cuotas: cuotasEvento,
-    fecha: fechaEvento
-  };
-
-  // Llamar a Google Apps Script para guardar los datos en la hoja de cálculo
-  fetch(url + '?action=guardar_presupuesto', {
-    method: 'POST',
-    body: JSON.stringify(data)
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      document.getElementById('mensaje-confirmacion').style.display = 'block';
-      document.getElementById('presupuesto-form').reset();
-    }
-  })
-  .catch(error => console.error('Error:', error));
+    // Limpiar formulario después de 2 segundos
+    setTimeout(() => {
+      document.getElementById("mensaje-confirmacion").style.display = "none";
+      document.getElementById("presupuesto-form").reset();
+    }, 2000);
+  }).catch(error => console.log("Error:", error));
 });
