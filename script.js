@@ -1,190 +1,44 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbyW1LuNTofuyQ4OL6tcTRKR09j9OBxQbBBevpQ7bVzRfDXcv1EPGmSbiqOA0FMAT6Hr/exec';
+document.getElementById("presupuesto-form").addEventListener("submit", function(event) {
+  event.preventDefault();
 
-/**
- * Función para interactuar con la API de Google Apps Script
- */
-async function fetchAPI(operation, data = null) {
-    try {
-        const url = new URL(API_URL);
-        url.searchParams.append('operation', operation);
-        if (data) {
-            url.searchParams.append('data', JSON.stringify(data));
-        }
+  // Obtener valores del formulario
+  var nombre = document.getElementById("nombre-evento").value;
+  var precio = document.getElementById("precio-evento").value;
+  var tipo = document.getElementById("tipo-evento").value;
+  var cuotas = document.getElementById("cuotas-evento").value;
+  var fecha = document.getElementById("fecha-evento").value;
 
-        const response = await fetch(url);
-        const result = await response.json();
+  // Verificar que todos los campos estén completos
+  if (nombre === "" || precio === "" || fecha === "") {
+    alert("Por favor, completa todos los campos.");
+    return;
+  }
 
-        if (!result.success) {
-            throw new Error(result.error || 'Error en la operación');
-        }
+  // URL de Google Apps Script
+  var url = "https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec";
 
-        return result.data;
-    } catch (error) {
-        console.error('Error en fetchAPI:', error);
-        alert('Error al procesar la operación. Inténtalo nuevamente.');
-        return null;
-    }
-}
+  // Enviar datos a Google Sheets
+  fetch(url, {
+    method: "POST",
+    mode: "no-cors",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      nombre: nombre,
+      precio: precio,
+      tipo: tipo,
+      cuotas: cuotas,
+      fecha: fecha
+    })
+  }).then(() => {
+    // Mostrar mensaje de confirmación
+    document.getElementById("mensaje-confirmacion").style.display = "block";
 
-/**
- * Función para mostrar la sección seleccionada y actualizar listas cuando sea necesario
- */
-function mostrarSeccion(seccionId) {
-    document.querySelectorAll('section').forEach(seccion => {
-        seccion.style.display = 'none';
-    });
-
-    const seccionSeleccionada = document.getElementById(seccionId);
-    if (seccionSeleccionada) {
-        seccionSeleccionada.style.display = 'block';
-    }
-
-    switch (seccionId) {
-        case 'presupuestos-enviados':
-            actualizarListaPresupuestos();
-            break;
-        case 'pagos-en-curso':
-            actualizarListaPagos();
-            break;
-        case 'pagos-completados':
-            actualizarListaCompletados();
-            break;
-    }
-}
-
-// Evento para manejar el envío del formulario de presupuestos
-document.getElementById('presupuesto-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const nombre = document.getElementById('nombre').value.trim();
-    const precio = parseFloat(document.getElementById('precio').value);
-    const tipo = document.getElementById('tipo').value;
-    const cuotas = parseInt(document.getElementById('cuotas').value);
-    const fecha = document.getElementById('fecha').value;
-
-    if (!nombre || isNaN(precio) || !tipo || isNaN(cuotas) || !fecha) {
-        alert('Por favor, completa todos los campos correctamente.');
-        return;
-    }
-
-    const nuevoPresupuesto = {
-        Nombre: nombre,
-        Precio: precio,
-        Tipo: tipo,
-        Cuotas: cuotas,
-        Fecha: fecha,
-        SaldoRestante: precio,
-        MontoPagado: 0
-    };
-
-    const resultado = await fetchAPI('addPresupuesto', nuevoPresupuesto);
-
-    if (resultado !== null) {
-        document.getElementById('presupuesto-form').reset();
-        document.getElementById('mensaje-confirmacion').style.display = 'block';
-        setTimeout(() => {
-            document.getElementById('mensaje-confirmacion').style.display = 'none';
-        }, 3000);
-        actualizarListaPresupuestos();
-    }
-});
-
-// Función para actualizar la lista de presupuestos
-async function actualizarListaPresupuestos() {
-    const presupuestos = await fetchAPI('getPresupuestos');
-    if (!presupuestos) return;
-
-    const lista = document.getElementById('lista-presupuestos');
-    lista.innerHTML = '';
-
-    presupuestos.forEach((presupuesto, index) => {
-        const div = document.createElement('div');
-        div.classList.add('evento');
-        div.innerHTML = `
-            <p>${presupuesto.Nombre} (${presupuesto.Tipo}) - $${presupuesto.Precio}</p>
-            <div class="detalles">
-                <p>Fecha: ${presupuesto.Fecha}</p>
-                <p>Cuotas: ${presupuesto.Cuotas}</p>
-                <button onclick="confirmarPresupuesto(${index})">Confirmar</button>
-                <button onclick="eliminarPresupuesto(${index})">Eliminar</button>
-            </div>
-        `;
-        lista.appendChild(div);
-    });
-}
-
-async function actualizarListaPagos() {
-    const pagos = await fetchAPI('getPagosEnCurso');
-    if (!pagos) return;
-
-    const lista = document.getElementById('lista-pagos');
-    lista.innerHTML = '';
-
-    pagos.forEach((pago, index) => {
-        const montoPorCuota = pago.Precio / pago.Cuotas;
-        const div = document.createElement('div');
-        div.classList.add('evento');
-        div.innerHTML = `
-            <p>${pago.Nombre} (${pago.Tipo}) - $${pago.Precio}</p>
-            <div class="detalles">
-                <p>Fecha: ${pago.Fecha}</p>
-                <p>Cuotas: ${pago.Cuotas}</p>
-                <p>Monto por cuota: $${montoPorCuota.toFixed(2)}</p>
-                <p>Monto pagado: $${pago.MontoPagado || 0}</p>
-                <p>Saldo restante: $${pago.SaldoRestante || pago.Precio}</p>
-                <div class="cuota-input">
-                    <label>Agregar pago:</label>
-                    <input type="number" min="0" max="${pago.SaldoRestante || pago.Precio}" step="0.01" id="pago-${index}">
-                    <button onclick="registrarPago(${index})">Registrar pago</button>
-                </div>
-                <button onclick="confirmarPago(${index})">Finalizar pago</button>
-                <button onclick="eliminarPago(${index})">Eliminar</button>
-            </div>
-        `;
-        lista.appendChild(div);
-    });
-}
-
-async function registrarPago(index) {
-    const input = document.getElementById(`pago-${index}`);
-    const monto = parseFloat(input.value);
-
-    if (!monto || monto <= 0) {
-        alert('Por favor ingresa un monto válido.');
-        return;
-    }
-
-    const resultado = await fetchAPI('actualizarCuota', { index, monto });
-
-    if (resultado !== null) {
-        actualizarListaPagos();
-    }
-}
-
-async function actualizarListaCompletados() {
-    const completados = await fetchAPI('getPagosCompletados');
-    if (!completados) return;
-
-    const lista = document.getElementById('lista-completados');
-    lista.innerHTML = '';
-
-    completados.forEach((completado, index) => {
-        const div = document.createElement('div');
-        div.classList.add('evento');
-        div.innerHTML = `
-            <p>${completado.Nombre} (${completado.Tipo}) - $${completado.Precio}</p>
-            <div class="detalles">
-                <p>Fecha de evento: ${completado.Fecha}</p>
-                <p>Fecha de completado: ${completado.FechaCompletado}</p>
-                <button onclick="eliminarPagoCompletado(${index})">Eliminar</button>
-            </div>
-        `;
-        lista.appendChild(div);
-    });
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    actualizarListaPresupuestos();
-    actualizarListaPagos();
-    actualizarListaCompletados();
+    // Limpiar formulario después de 2 segundos
+    setTimeout(() => {
+      document.getElementById("mensaje-confirmacion").style.display = "none";
+      document.getElementById("presupuesto-form").reset();
+    }, 2000);
+  }).catch(error => console.log("Error:", error));
 });
