@@ -1,126 +1,47 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const formularioPresupuesto = document.getElementById('presupuesto-form');
-    const listaPrecupuestos = document.getElementById('lista-presupuestos');
-    const mensajeConfirmacion = document.getElementById('mensaje-confirmacion');
+// script.js
 
-    // Configuración de la URL del proyecto de Google Apps Script
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbw2PEySWpXViI5gLRrsN-Evf3kPFJlyxSDs9N8Tfxm04VbyZrSRrZvU7TGzvCQK5awk/exec';
+document.getElementById('presupuestoForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Evita que el formulario se envíe de forma tradicional
 
-    // Función para mostrar/ocultar secciones
-    window.mostrarSeccion = function(seccionId) {
-        const secciones = document.querySelectorAll('section');
-        secciones.forEach(seccion => {
-            seccion.style.display = seccion.id === seccionId ? 'block' : 'none';
-        });
+    // Obtener los valores del formulario
+    const nombreEvento = document.getElementById('nombreEvento').value;
+    const precio = document.getElementById('precio').value;
+    const tipoEvento = document.getElementById('tipoEvento').value;
+    const cuotas = document.getElementById('cuotas').value;
+    const fechaEvento = document.getElementById('fechaEvento').value;
 
-        if (seccionId === 'presupuestos-enviados') {
-            cargarPresupuestos();
-        }
+    // Crear un objeto con los datos
+    const data = {
+        nombreEvento: nombreEvento,
+        precio: precio,
+        tipoEvento: tipoEvento,
+        cuotas: cuotas,
+        fechaEvento: fechaEvento
     };
 
-    // Guardar nuevo presupuesto
-    formularioPresupuesto.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const nombreEvento = document.getElementById('nombre-evento').value;
-        const precioEvento = document.getElementById('precio-evento').value;
-        const tipoEvento = document.getElementById('tipo-evento').value;
-        const cuotasEvento = document.getElementById('cuotas-evento').value;
-        const fechaEvento = document.getElementById('fecha-evento').value;
-
-        const datos = {
-            nombreEvento,
-            precio: precioEvento,
-            tipoEvento,
-            cuotas: cuotasEvento,
-            fechaEvento
-        };
-
-        // Llamada al backend de Google Apps Script
-        fetch(scriptURL, {
-            method: 'POST',
-            body: JSON.stringify(datos),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(result => {
-            formularioPresupuesto.reset();
-            mensajeConfirmacion.style.display = 'block';
-            setTimeout(() => {
-                mensajeConfirmacion.style.display = 'none';
-            }, 3000);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Hubo un problema al guardar el presupuesto');
-        });
-    });
-
-    // Cargar presupuestos en la página de Presupuestos Enviados
-    function cargarPresupuestos() {
-        fetch(scriptURL)
-        .then(response => response.json())
-        .then(presupuestos => {
-            listaPrecupuestos.innerHTML = ''; // Limpiar lista anterior
-            
-            presupuestos.forEach((presupuesto, index) => {
-                const [nombreEvento, precio, tipoEvento, cuotas, fechaEvento] = presupuesto;
-                
-                const eventoDiv = document.createElement('div');
-                eventoDiv.classList.add('evento');
-                eventoDiv.innerHTML = `
-                    <h3>${nombreEvento}</h3>
-                    <div class="detalles">
-                        <p>Precio: $${precio}</p>
-                        <p>Tipo de Evento: ${tipoEvento}</p>
-                        <p>Cuotas: ${cuotas}</p>
-                        <p>Fecha: ${fechaEvento}</p>
-                        <button onclick="confirmarEvento(${index})">Confirmar</button>
-                        <button onclick="eliminarEvento(${index})">Eliminar</button>
-                    </div>
-                `;
-
-                eventoDiv.addEventListener('click', function() {
-                    this.classList.toggle('active');
-                });
-
-                listaPrecupuestos.appendChild(eventoDiv);
-            });
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('No se pudieron cargar los presupuestos');
-        });
-    }
-
-    // Función global para confirmar evento
-    window.confirmarEvento = function(indice) {
-        fetch(`${scriptURL}?action=confirmar&index=${indice}`, {
-            method: 'GET'
-        })
-        .then(response => response.json())
-        .then(() => {
-            cargarPresupuestos();
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('No se pudo confirmar el evento');
-        });
-    };
-
-    // Función global para eliminar evento
-    window.eliminarEvento = function(indice) {
-        fetch(`${scriptURL}?action=eliminar&index=${indice}`, {
-            method: 'GET'
-        })
-        .then(response => response.json())
-        .then(() => {
-            cargarPresupuestos();
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('No se pudo eliminar el evento');
-        });
-    };
+    // Enviar los datos a Google Sheets
+    guardarEnGoogleSheets(data);
 });
+
+function guardarEnGoogleSheets(data) {
+    const url = 'https://script.google.com/macros/s/AKfycbw6Fgd2nifAe3E5Ao36HhH6M1ifFS6k9I3NK_94HhG1oYj895YwF4EIGQk2CrjGLAIU/exec'; // Reemplaza con la URL de tu proyecto de Apps Script
+
+    // Enviar los datos usando fetch
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.text())
+    .then(result => {
+        console.log(result); // Mostrar el resultado en la consola
+        alert('Datos guardados correctamente'); // Mostrar un mensaje de éxito
+        document.getElementById('presupuestoForm').reset(); // Limpiar el formulario
+    })
+    .catch(error => {
+        console.error('Error:', error); // Mostrar el error en la consola
+        alert('Hubo un error al guardar los datos'); // Mostrar un mensaje de error
+    });
+}
