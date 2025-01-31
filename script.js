@@ -1,44 +1,64 @@
-document.getElementById("presupuesto-form").addEventListener("submit", function(event) {
-  event.preventDefault();
+document.addEventListener("DOMContentLoaded", function () {
+    mostrarSeccion('presupuestos'); // Mostrar sección por defecto
 
-  // Obtener valores del formulario
-  var nombre = document.getElementById("nombre-evento").value;
-  var precio = document.getElementById("precio-evento").value;
-  var tipo = document.getElementById("tipo-evento").value;
-  var cuotas = document.getElementById("cuotas-evento").value;
-  var fecha = document.getElementById("fecha-evento").value;
+    document.getElementById("presupuesto-form").addEventListener("submit", function (event) {
+        event.preventDefault(); // Evita que el formulario recargue la página
 
-  // Verificar que todos los campos estén completos
-  if (nombre === "" || precio === "" || fecha === "") {
-    alert("Por favor, completa todos los campos.");
-    return;
-  }
+        // Capturar datos del formulario
+        let nombreEvento = document.getElementById("nombre-evento").value;
+        let precioEvento = document.getElementById("precio-evento").value;
+        let tipoEvento = document.getElementById("tipo-evento").value;
+        let cuotasEvento = document.getElementById("cuotas-evento").value;
+        let fechaEvento = document.getElementById("fecha-evento").value;
 
-  // URL de Google Apps Script
-  var url = "https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec";
+        // Enviar datos a Google Apps Script
+        fetch("TU_URL_WEB_APP", {
+            method: "POST",
+            body: JSON.stringify({
+                nombre: nombreEvento,
+                precio: precioEvento,
+                tipo: tipoEvento,
+                cuotas: cuotasEvento,
+                fecha: fechaEvento,
+                estado: "Pendiente"
+            }),
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                document.getElementById("mensaje-confirmacion").style.display = "block";
+                document.getElementById("presupuesto-form").reset();
+            } else {
+                alert("Error al guardar el presupuesto.");
+            }
+        })
+        .catch(error => console.error("Error:", error));
+    });
 
-  // Enviar datos a Google Sheets
-  fetch(url, {
-    method: "POST",
-    mode: "no-cors",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      nombre: nombre,
-      precio: precio,
-      tipo: tipo,
-      cuotas: cuotas,
-      fecha: fecha
-    })
-  }).then(() => {
-    // Mostrar mensaje de confirmación
-    document.getElementById("mensaje-confirmacion").style.display = "block";
-
-    // Limpiar formulario después de 2 segundos
-    setTimeout(() => {
-      document.getElementById("mensaje-confirmacion").style.display = "none";
-      document.getElementById("presupuesto-form").reset();
-    }, 2000);
-  }).catch(error => console.log("Error:", error));
+    // Cargar presupuestos guardados al abrir la página
+    cargarPresupuestos();
 });
+
+function cargarPresupuestos() {
+    fetch("TU_URL_WEB_APP")
+        .then(response => response.json())
+        .then(data => {
+            let lista = document.getElementById("lista-presupuestos");
+            lista.innerHTML = "";
+
+            data.presupuestos.forEach(presupuesto => {
+                let div = document.createElement("div");
+                div.classList.add("evento");
+                div.innerHTML = `
+                    <strong>${presupuesto.nombre}</strong> - ${presupuesto.tipo} - $${presupuesto.precio} 
+                    <br> ${presupuesto.cuotas} cuota(s) - Fecha: ${presupuesto.fecha}
+                    <br> Estado: ${presupuesto.estado}
+                `;
+                lista.appendChild(div);
+            });
+        })
+        .catch(error => console.error("Error al cargar presupuestos:", error));
+}
