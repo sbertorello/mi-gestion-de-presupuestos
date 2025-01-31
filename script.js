@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function cargarPresupuestos() {
-    fetch("TU_URL_WEB_APP")
+    fetch("https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec")
         .then(response => response.json())
         .then(data => {
             let lista = document.getElementById("lista-presupuestos");
