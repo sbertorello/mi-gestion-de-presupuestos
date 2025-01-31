@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
         let fechaEvento = document.getElementById("fecha-evento").value;
 
         // Enviar datos a Google Apps Script
-        fetch("TU_URL_WEB_APP", {
+        fetch("https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec", {
             method: "POST",
             body: JSON.stringify({
                 nombre: nombreEvento,
