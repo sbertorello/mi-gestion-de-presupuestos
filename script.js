@@ -15,7 +15,7 @@ document.getElementById("presupuesto-form").addEventListener("submit", function(
   }
 
   // URL de Google Apps Script
-  var url = "TU_URL_DE_LA_APP_AQUÍ";
+  var url = "https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec";
 
   // Enviar datos a Google Sheets
   fetch(url, {
