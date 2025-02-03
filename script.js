@@ -1,38 +1,43 @@
-document.addEventListener("DOMContentLoaded", function () {
-  document.getElementById("presupuesto-form").addEventListener("submit", async function (event) {
-    event.preventDefault();
+// Código de script.js
+const URL_APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbxiDPfrHoWsjCZEza5KiAnSrAxAz0AuvE6rldevIeK5BvXd5T0A87J4nz80ondQMBVq/exec'; // Reemplaza con la URL que copiaste
 
-    let datos = {
-      nombre: document.getElementById("nombre-evento").value,
-      precio: document.getElementById("precio-evento").value,
-      tipo: document.getElementById("tipo-evento").value,
-      cuotas: document.getElementById("cuotas-evento").value,
-      fecha: document.getElementById("fecha-evento").value
-    };
-
-    let url = "https://script.google.com/macros/s/AKfycbwNuTzryL4soM5PLs3TsqscOqIU8FPedIQEPTKsTDQw-VuL5gta-1sybfGFn2ymHOw/exec";
-
-    try {
-      let response = await fetch(url, {
-        method: "POST",
-        mode: "cors",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(datos)
-      });
-
-      let mensaje = await response.text();
-      document.getElementById("mensaje-confirmacion").innerText = mensaje;
-      document.getElementById("mensaje-confirmacion").style.display = "block";
-
-      setTimeout(() => {
-        document.getElementById("mensaje-confirmacion").style.display = "none";
-        document.getElementById("presupuesto-form").reset();
-      }, 2000);
-    } catch (error) {
-      console.error("Error al enviar los datos:", error);
-      alert("Error al enviar los datos. Revisa la consola.");
-    }
+function mostrarSeccion(seccion) {
+  document.querySelectorAll('section').forEach(section => {
+    section.style.display = 'none';
   });
+  document.getElementById(seccion).style.display = 'block';
+}
+
+document.getElementById('presupuesto-form').addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  const nombreEvento = document.getElementById('nombre-evento').value;
+  const precioEvento = document.getElementById('precio-evento').value;
+  const tipoEvento = document.getElementById('tipo-evento').value;
+  const cuotasEvento = document.getElementById('cuotas-evento').value;
+  const fechaEvento = document.getElementById('fecha-evento').value;
+
+  const data = {
+    nombreEvento: nombreEvento,
+    precio: precioEvento,
+    tipoEvento: tipoEvento,
+    cuotas: cuotasEvento,
+    fechaEvento: fechaEvento
+  };
+
+  fetch(URL_APPS_SCRIPT, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  })
+    .then(response => response.json())
+    .then(result => {
+      if (result.success) {
+        document.getElementById('mensaje-confirmacion').style.display = 'block';
+        document.getElementById('presupuesto-form').reset();
+        setTimeout(() => {
+          document.getElementById('mensaje-confirmacion').style.display = 'none';
+        }, 3000);
+      }
+    })
+    .catch(error => console.error('Error:', error));
 });
