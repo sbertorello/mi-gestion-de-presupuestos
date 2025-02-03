@@ -1,88 +1,28 @@
-// script.js
+document.getElementById("presupuesto-form").addEventListener("submit", async function (event) {
+  event.preventDefault();
 
-// Función para mostrar u ocultar secciones
-function mostrarSeccion(seccionId) {
-    // Ocultar todas las secciones
-    document.querySelectorAll('main section').forEach(seccion => {
-        seccion.style.display = 'none';
-    });
+  let datos = {
+    nombre: document.getElementById("nombre-evento").value,
+    precio: document.getElementById("precio-evento").value,
+    tipo: document.getElementById("tipo-evento").value,
+    cuotas: document.getElementById("cuotas-evento").value,
+    fecha: document.getElementById("fecha-evento").value
+  };
 
-    // Mostrar la sección seleccionada
-    const seccion = document.getElementById(seccionId);
-    if (seccion) {
-        seccion.style.display = 'block';
-    }
-}
+  let url = "https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec";
+  
+  let response = await fetch(url, {
+    method: "POST",
+    body: JSON.stringify(datos),
+    headers: { "Content-Type": "application/json" }
+  });
 
-// Mostrar la sección de "Presupuestos" por defecto al cargar la página
-mostrarSeccion('presupuestos');
+  let mensaje = await response.text();
+  document.getElementById("mensaje-confirmacion").innerText = mensaje;
+  document.getElementById("mensaje-confirmacion").style.display = "block";
 
-// Lógica para enviar datos del formulario a Google Sheets
-document.addEventListener('DOMContentLoaded', function() {
-    const formulario = document.getElementById('presupuesto-form');
-
-    if (formulario) {
-        formulario.addEventListener('submit', function(event) {
-            event.preventDefault(); // Evita que el formulario se envíe de forma tradicional
-
-            // Obtener los valores del formulario
-            const nombreEvento = document.getElementById('nombre-evento').value;
-            const precioEvento = document.getElementById('precio-evento').value;
-            const tipoEvento = document.getElementById('tipo-evento').value;
-            const cuotasEvento = document.getElementById('cuotas-evento').value;
-            const fechaEvento = document.getElementById('fecha-evento').value;
-
-            // Crear un objeto con los datos
-            const data = {
-                nombreEvento: nombreEvento,
-                precioEvento: precioEvento,
-                tipoEvento: tipoEvento,
-                cuotasEvento: cuotasEvento,
-                fechaEvento: fechaEvento
-            };
-
-            // Enviar los datos a Google Sheets
-            guardarEnGoogleSheets(data);
-        });
-    } else {
-        console.error('El formulario con ID "presupuesto-form" no fue encontrado.');
-    }
+  setTimeout(() => {
+    document.getElementById("mensaje-confirmacion").style.display = "none";
+    document.getElementById("presupuesto-form").reset();
+  }, 2000);
 });
-
-function guardarEnGoogleSheets(data) {
-    const url = 'https://script.google.com/macros/s/AKfycbw6Fgd2nifAe3E5Ao36HhH6M1ifFS6k9I3NK_94HhG1oYj895YwF4EIGQk2CrjGLAIU/exec'; // URL de tu Apps Script
-
-    // Enviar los datos usando fetch
-    fetch(url, {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Error en la solicitud');
-        }
-        return response.json();
-    })
-    .then(result => {
-        console.log(result); // Mostrar el resultado en la consola
-        if (result.success) {
-            alert(result.message); // Mostrar un mensaje de éxito
-            document.getElementById('presupuesto-form').reset(); // Limpiar el formulario
-
-            // Mostrar el mensaje de confirmación
-            const mensajeConfirmacion = document.getElementById('mensaje-confirmacion');
-            if (mensajeConfirmacion) {
-                mensajeConfirmacion.style.display = 'block';
-            }
-        } else {
-            alert(result.message); // Mostrar un mensaje de error
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error); // Mostrar el error en la consola
-        alert('Hubo un error al guardar los datos'); // Mostrar un mensaje de error
-    });
-}
