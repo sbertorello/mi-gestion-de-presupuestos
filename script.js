@@ -10,7 +10,7 @@ document.getElementById("presupuesto-form").addEventListener("submit", async fun
   };
 
   let url = "https://script.google.com/macros/s/AKfycbw9GpfSFGtd0AAhnhfaczhvq_TBa25-Cjjl5QUshgf6cEnh_ussv_i9_JJr7xYDnhYO/exec";
-  
+
   let response = await fetch(url, {
     method: "POST",
     body: JSON.stringify(datos),
