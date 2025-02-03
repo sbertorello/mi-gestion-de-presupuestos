@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
       fecha: document.getElementById("fecha-evento").value
     };
 
-    let url = "https://script.google.com/macros/s/AKfycbw9GpfSFGtd0AAhnhfaczhvq_TBa25-Cjjl5QUshgf6cEnh_ussv_i9_JJr7xYDnhYO/exec";
+    let url = "https://script.google.com/macros/s/AKfycbwNuTzryL4soM5PLs3TsqscOqIU8FPedIQEPTKsTDQw-VuL5gta-1sybfGFn2ymHOw/exec";
 
     try {
       let response = await fetch(url, {
