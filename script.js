@@ -9,7 +9,7 @@ document.getElementById("presupuesto-form").addEventListener("submit", async fun
     fecha: document.getElementById("fecha-evento").value
   };
 
-  let url = "https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec";
+  let url = "https://script.google.com/macros/s/AKfycbw9GpfSFGtd0AAhnhfaczhvq_TBa25-Cjjl5QUshgf6cEnh_ussv_i9_JJr7xYDnhYO/exec";
   
   let response = await fetch(url, {
     method: "POST",
