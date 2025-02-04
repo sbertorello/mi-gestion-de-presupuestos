@@ -86,30 +86,34 @@ function cargarPresupuestosEnviados() {
 
 // Función para eliminar un evento
 function eliminarEvento(id) {
-  fetch(URL_APPS_SCRIPT, {
-    method: 'POST',
-    body: JSON.stringify({ accion: 'eliminar', id: id })
-  })
-    .then(response => response.json())
-    .then(result => {
-      if (result.success) {
-        cargarPresupuestosEnviados(); // Recargar la lista
-      }
+  if (confirm('¿Estás seguro de que quieres eliminar este evento?')) {
+    fetch(URL_APPS_SCRIPT, {
+      method: 'POST',
+      body: JSON.stringify({ accion: 'eliminar', id: id })
     })
-    .catch(error => console.error('Error:', error));
+      .then(response => response.json())
+      .then(result => {
+        if (result.success) {
+          cargarPresupuestosEnviados(); // Recargar la lista
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  }
 }
 
 // Función para confirmar un evento
 function confirmarEvento(id) {
-  fetch(URL_APPS_SCRIPT, {
-    method: 'POST',
-    body: JSON.stringify({ accion: 'confirmar', id: id })
-  })
-    .then(response => response.json())
-    .then(result => {
-      if (result.success) {
-        cargarPresupuestosEnviados(); // Recargar la lista
-      }
+  if (confirm('¿Estás seguro de que quieres confirmar este evento?')) {
+    fetch(URL_APPS_SCRIPT, {
+      method: 'POST',
+      body: JSON.stringify({ accion: 'confirmar', id: id })
     })
-    .catch(error => console.error('Error:', error));
+      .then(response => response.json())
+      .then(result => {
+        if (result.success) {
+          cargarPresupuestosEnviados(); // Recargar la lista
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  }
 }
