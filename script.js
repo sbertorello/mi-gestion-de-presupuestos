@@ -19,7 +19,7 @@ function guardarPresupuesto(event) {
     }
 
     // Enviar los datos a Google Sheets
-    let urlAppScript = "URL_DE_TU_APPS_SCRIPT"; // Reemplázala con la URL de tu implementación de Apps Script
+    let urlAppScript = "https://script.google.com/macros/s/AKfycbxHb7-QFyYks7xO6rkNqQpNRnyTZ6VDBsSa3_-D_2SJn5fcf-9bRahWe4Wz3sbqx4vQ/exec"; // Reemplázala con la URL de tu implementación de Apps Script
     let datos = {
         nombreEvento: nombreEvento,
         precioEvento: precioEvento,
