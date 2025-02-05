@@ -1,20 +1,7 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbykxo_v58ojAkxf50X6xpV49xyzC8CEKIOr-HAFTXVW7Nb5xCh3XjqqNrr2VWOez7HgDg/exec"; // Reemplaza con la URL de AppScript
 
-// Función para mostrar la sección seleccionada
-function mostrarSeccion(seccion) {
-    document.querySelectorAll('section').forEach(section => {
-        section.style.display = 'none';
-    });
-    document.getElementById(seccion).style.display = 'block';
-
-    // Si la sección es "presupuestos-enviados", cargar los presupuestos
-    if (seccion === 'presupuestos-enviados') {
-        cargarPresupuestos();
-    }
-}
-
-// Función para guardar el presupuesto
-function guardarPresupuesto(event) {
+// Agregar el evento para el formulario de presupuestos
+document.getElementById("presupuesto-form").addEventListener("submit", function(event) {
     event.preventDefault(); // Evita el recargo de la página
 
     // Capturar los valores del formulario
@@ -52,61 +39,57 @@ function guardarPresupuesto(event) {
         setTimeout(() => {
             document.getElementById("mensaje-confirmacion").style.display = "none";
         }, 2000);
+
+        // Cargar la lista de presupuestos enviados
+        cargarPresupuestosEnviados();
     }).catch(error => console.error("Error:", error));
-}
+});
 
-// Asignar la función guardarPresupuesto al formulario
-document.getElementById("presupuesto-form").addEventListener("submit", guardarPresupuesto);
-
-// Función para cargar los presupuestos desde Google Sheets
-function cargarPresupuestos() {
+// Función para cargar los presupuestos enviados
+function cargarPresupuestosEnviados() {
     fetch(API_URL + "?action=getPresupuestos", {
         method: "GET",
-        mode: "no-cors"
-    })
-    .then(response => response.json())
-    .then(data => {
-        let listaPresupuestos = document.getElementById("lista-presupuestos");
-        listaPresupuestos.innerHTML = ""; // Limpiar la lista antes de agregar los nuevos elementos
+        mode: "cors",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    }).then(response => response.json())
+      .then(data => {
+          const listaPresupuestos = document.getElementById("lista-presupuestos");
+          listaPresupuestos.innerHTML = ""; // Limpiar la lista
 
-        data.forEach(presupuesto => {
-            let div = document.createElement("div");
-            div.className = "presupuesto-item";
-            div.innerHTML = `
-                <h3>${presupuesto.nombreEvento}</h3>
-                <p>Precio: $${presupuesto.precio}</p>
-                <p>Tipo de Evento: ${presupuesto.tipoEvento}</p>
-                <p>Cuotas: ${presupuesto.cuotas}</p>
-                <p>Fecha del Evento: ${presupuesto.fechaEvento}</p>
-                <button onclick="eliminarPresupuesto(${presupuesto.ID})">Eliminar</button>
-                <button onclick="confirmarPresupuesto(${presupuesto.ID})">Confirmar</button>
-            `;
-            listaPresupuestos.appendChild(div);
-        });
-    })
-    .catch(error => console.error("Error al cargar presupuestos:", error));
+          data.forEach(evento => {
+              const div = document.createElement("div");
+              div.innerHTML = `
+                <strong>${evento.nombreEvento}</strong>
+                <button onclick="confirmarEvento(${evento.id})">Confirmar</button>
+                <button onclick="eliminarEvento(${evento.id})">Eliminar</button>
+              `;
+              listaPresupuestos.appendChild(div);
+          });
+      }).catch(error => console.error("Error al cargar los presupuestos:", error));
 }
 
-// Función para eliminar un presupuesto
-function eliminarPresupuesto(id) {
-    fetch(API_URL + "?action=eliminarPresupuesto&id=" + id, {
-        method: "GET",
-        mode: "no-cors"
-    })
-    .then(() => {
-        cargarPresupuestos(); // Recargar la lista después de eliminar
-    })
-    .catch(error => console.error("Error:", error));
+// Funciones para confirmar y eliminar eventos
+function confirmarEvento(id) {
+    // Aquí deberías enviar el ID del evento a la siguiente página (Pagos en Curso)
+    console.log("Confirmar evento con ID:", id);
+    // Implementar la lógica para mover este evento a "Pagos en Curso"
 }
 
-// Función para confirmar un presupuesto
-function confirmarPresupuesto(id) {
-    fetch(API_URL + "?action=confirmarPresupuesto&id=" + id, {
-        method: "GET",
-        mode: "no-cors"
-    })
-    .then(() => {
-        cargarPresupuestos(); // Recargar la lista después de confirmar
-    })
-    .catch(error => console.error("Error:", error));
+function eliminarEvento(id) {
+    // Aquí deberías enviar el ID del evento para eliminarlo
+    console.log("Eliminar evento con ID:", id);
+    // Implementar la lógica para eliminar este evento
+}
+
+// Cargar la lista de presupuestos enviados cuando la página se muestre
+function mostrarSeccion(seccion) {
+    const secciones = document.querySelectorAll("main > section");
+    secciones.forEach(s => s.style.display = "none");
+    document.getElementById(seccion).style.display = "block";
+
+    if (seccion === "presupuestos-enviados") {
+        cargarPresupuestosEnviados();
+    }
 }
