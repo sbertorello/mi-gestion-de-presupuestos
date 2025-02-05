@@ -14,7 +14,7 @@ function mostrarSeccion(seccion) {
 }
 
 // Función para guardar el presupuesto
-document.getElementById("presupuesto-form").addEventListener("submit", function(event) {
+function guardarPresupuesto(event) {
     event.preventDefault(); // Evita el recargo de la página
 
     // Capturar los valores del formulario
@@ -53,7 +53,10 @@ document.getElementById("presupuesto-form").addEventListener("submit", function(
             document.getElementById("mensaje-confirmacion").style.display = "none";
         }, 2000);
     }).catch(error => console.error("Error:", error));
-});
+}
+
+// Asignar la función guardarPresupuesto al formulario
+document.getElementById("presupuesto-form").addEventListener("submit", guardarPresupuesto);
 
 // Función para cargar los presupuestos desde Google Sheets
 function cargarPresupuestos() {
