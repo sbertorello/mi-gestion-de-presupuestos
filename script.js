@@ -1,29 +1,42 @@
-document.getElementById("formPresupuesto").addEventListener("submit", function(event) {
-    event.preventDefault();
+const API_URL = "https://script.google.com/macros/s/AKfycbykxo_v58ojAkxf50X6xpV49xyzC8CEKIOr-HAFTXVW7Nb5xCh3XjqqNrr2VWOez7HgDg/exec"; // Reemplaza con la URL de AppScript
 
-    let datos = {
-        NombreEvento: document.getElementById("nombreEvento").value,
-        Precio: document.getElementById("precio").value,
-        TipoEvento: document.getElementById("tipoEvento").value,
-        Cuotas: document.getElementById("cuotas").value,
-        FechaEvento: document.getElementById("fechaEvento").value
+document.getElementById("presupuesto-form").addEventListener("submit", function(event) {
+    event.preventDefault(); // Evita el recargo de la página
+
+    // Capturar los valores del formulario
+    let nombreEvento = document.getElementById("nombre-evento").value;
+    let precio = document.getElementById("precio-evento").value;
+    let tipoEvento = document.getElementById("tipo-evento").value;
+    let cuotas = document.getElementById("cuotas-evento").value;
+    let fechaEvento = document.getElementById("fecha-evento").value;
+
+    // Crear el objeto de datos
+    let presupuesto = {
+        nombreEvento: nombreEvento,
+        precio: precio,
+        tipoEvento: tipoEvento,
+        cuotas: cuotas,
+        fechaEvento: fechaEvento
     };
 
-    fetch("https://script.google.com/macros/s/AKfycbxHb7-QFyYks7xO6rkNqQpNRnyTZ6VDBsSa3_-D_2SJn5fcf-9bRahWe4Wz3sbqx4vQ/exec", {
+    // Enviar los datos a AppScript
+    fetch(API_URL, {
         method: "POST",
-        mode: "cors", // Permitir CORS
+        mode: "no-cors",  // Evita errores CORS
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify(datos)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === "success") {
-            alert("Presupuesto guardado exitosamente.");
-        } else {
-            alert("Error al guardar el presupuesto.");
-        }
-    })
-    .catch(error => console.error("Error en la solicitud:", error));
+        body: JSON.stringify(presupuesto)
+    }).then(() => {
+        // Mostrar mensaje de confirmación
+        document.getElementById("mensaje-confirmacion").style.display = "block";
+        
+        // Limpiar el formulario
+        document.getElementById("presupuesto-form").reset();
+
+        // Ocultar el mensaje después de 2 segundos
+        setTimeout(() => {
+            document.getElementById("mensaje-confirmacion").style.display = "none";
+        }, 2000);
+    }).catch(error => console.error("Error:", error));
 });
