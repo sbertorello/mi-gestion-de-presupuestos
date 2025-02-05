@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function guardarPresupuesto(event) {
-    event.preventDefault(); // Evita que el formulario recargue la página
+    event.preventDefault(); // Evita la recarga de la página
 
     // Capturar los datos del formulario
     let nombreEvento = document.getElementById("nombre-evento").value;
@@ -18,8 +18,7 @@ function guardarPresupuesto(event) {
         return;
     }
 
-    // Enviar los datos a Google Sheets
-    let urlAppScript = "https://script.google.com/macros/s/AKfycbxHb7-QFyYks7xO6rkNqQpNRnyTZ6VDBsSa3_-D_2SJn5fcf-9bRahWe4Wz3sbqx4vQ/exec"; // Reemplázala con la URL de tu implementación de Apps Script
+    // Construir objeto de datos
     let datos = {
         nombreEvento: nombreEvento,
         precioEvento: precioEvento,
@@ -28,23 +27,23 @@ function guardarPresupuesto(event) {
         fechaEvento: fechaEvento
     };
 
+    // URL de tu Apps Script
+    let urlAppScript = "https://script.google.com/macros/s/AKfycbxHb7-QFyYks7xO6rkNqQpNRnyTZ6VDBsSa3_-D_2SJn5fcf-9bRahWe4Wz3sbqx4vQ/exec";
+
     fetch(urlAppScript, {
         method: "POST",
-        body: JSON.stringify(datos),
         headers: {
             "Content-Type": "application/json"
-        }
+        },
+        body: JSON.stringify(datos)
     })
     .then(response => response.json())
     .then(data => {
         if (data.status === "success") {
             document.getElementById("presupuesto-form").reset();
-            document.getElementById("mensaje-confirmacion").style.display = "block";
-            setTimeout(() => {
-                document.getElementById("mensaje-confirmacion").style.display = "none";
-            }, 3000);
+            alert("Presupuesto guardado correctamente.");
         } else {
-            alert("Error al guardar los datos.");
+            alert("Error al guardar el presupuesto: " + data.message);
         }
     })
     .catch(error => {
