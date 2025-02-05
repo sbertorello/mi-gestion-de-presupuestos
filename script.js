@@ -1,76 +1,20 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbykxo_v58ojAkxf50X6xpV49xyzC8CEKIOr-HAFTXVW7Nb5xCh3XjqqNrr2VWOez7HgDg/exec"; // Reemplaza con la URL de AppScript
 
-// Función para mostrar la sección correspondiente
+// Función para mostrar la sección seleccionada
 function mostrarSeccion(seccion) {
-    // Ocultar todas las secciones
-    document.querySelectorAll("section").forEach(function(section) {
-        section.style.display = "none";
+    document.querySelectorAll('section').forEach(section => {
+        section.style.display = 'none';
     });
+    document.getElementById(seccion).style.display = 'block';
 
-    // Mostrar la sección seleccionada
-    document.getElementById(seccion).style.display = "block";
-
-    // Si estamos en la página "Presupuestos Enviados", cargar los eventos
+    // Si la sección es "presupuestos-enviados", cargar los presupuestos
     if (seccion === 'presupuestos-enviados') {
-        cargarPresupuestosEnviados();
+        cargarPresupuestos();
     }
 }
 
-// Función para cargar los presupuestos desde la hoja de Google Sheets
-function cargarPresupuestosEnviados() {
-    // Hacer una solicitud GET al servidor para obtener los datos
-    fetch(API_URL + "?action=getPresupuestos")
-        .then(response => response.json())
-        .then(data => {
-            // Limpiar la lista antes de cargar los nuevos presupuestos
-            const listaPresupuestos = document.getElementById("lista-presupuestos");
-            listaPresupuestos.innerHTML = "";
-
-            // Recorrer los datos y mostrar cada presupuesto
-            data.forEach(presupuesto => {
-                const divEvento = document.createElement("div");
-                divEvento.classList.add("evento");
-
-                // Mostrar los detalles del evento
-                divEvento.innerHTML = `
-                    <h3>${presupuesto.nombreEvento}</h3>
-                    <p>Precio: $${presupuesto.precio}</p>
-                    <p>Tipo de Evento: ${presupuesto.tipoEvento}</p>
-                    <p>Cuotas: ${presupuesto.cuotas}</p>
-                    <p>Fecha: ${presupuesto.fechaEvento}</p>
-                    <button onclick="eliminarPresupuesto(${presupuesto.id})">Eliminar</button>
-                    <button onclick="confirmarPresupuesto(${presupuesto.id})">Confirmar</button>
-                `;
-                
-                // Agregar el evento a la lista
-                listaPresupuestos.appendChild(divEvento);
-            });
-        })
-        .catch(error => console.error("Error al cargar presupuestos:", error));
-}
-
-// Función para eliminar un presupuesto
-function eliminarPresupuesto(id) {
-    fetch(API_URL + "?action=eliminarPresupuesto&id=" + id, { method: 'GET' })
-        .then(response => response.text())
-        .then(() => {
-            cargarPresupuestosEnviados(); // Recargar la lista de presupuestos
-        })
-        .catch(error => console.error("Error al eliminar el presupuesto:", error));
-}
-
-// Función para confirmar un presupuesto
-function confirmarPresupuesto(id) {
-    fetch(API_URL + "?action=confirmarPresupuesto&id=" + id, { method: 'GET' })
-        .then(response => response.text())
-        .then(() => {
-            cargarPresupuestosEnviados(); // Recargar la lista de presupuestos
-        })
-        .catch(error => console.error("Error al confirmar el presupuesto:", error));
-}
-
-// Código de la página "Presupuestos" (no cambia)
-document.getElementById("presupuesto-form").addEventListener("submit", function(event) {
+// Función para guardar el presupuesto
+function guardarPresupuesto(event) {
     event.preventDefault(); // Evita el recargo de la página
 
     // Capturar los valores del formulario
@@ -109,4 +53,60 @@ document.getElementById("presupuesto-form").addEventListener("submit", function(
             document.getElementById("mensaje-confirmacion").style.display = "none";
         }, 2000);
     }).catch(error => console.error("Error:", error));
-});
+}
+
+// Asignar la función guardarPresupuesto al formulario
+document.getElementById("presupuesto-form").addEventListener("submit", guardarPresupuesto);
+
+// Función para cargar los presupuestos desde Google Sheets
+function cargarPresupuestos() {
+    fetch(API_URL + "?action=getPresupuestos", {
+        method: "GET",
+        mode: "no-cors"
+    })
+    .then(response => response.json())
+    .then(data => {
+        let listaPresupuestos = document.getElementById("lista-presupuestos");
+        listaPresupuestos.innerHTML = ""; // Limpiar la lista antes de agregar los nuevos elementos
+
+        data.forEach(presupuesto => {
+            let div = document.createElement("div");
+            div.className = "presupuesto-item";
+            div.innerHTML = `
+                <h3>${presupuesto.nombreEvento}</h3>
+                <p>Precio: $${presupuesto.precio}</p>
+                <p>Tipo de Evento: ${presupuesto.tipoEvento}</p>
+                <p>Cuotas: ${presupuesto.cuotas}</p>
+                <p>Fecha del Evento: ${presupuesto.fechaEvento}</p>
+                <button onclick="eliminarPresupuesto(${presupuesto.ID})">Eliminar</button>
+                <button onclick="confirmarPresupuesto(${presupuesto.ID})">Confirmar</button>
+            `;
+            listaPresupuestos.appendChild(div);
+        });
+    })
+    .catch(error => console.error("Error:", error));
+}
+
+// Función para eliminar un presupuesto
+function eliminarPresupuesto(id) {
+    fetch(API_URL + "?action=eliminarPresupuesto&id=" + id, {
+        method: "GET",
+        mode: "no-cors"
+    })
+    .then(() => {
+        cargarPresupuestos(); // Recargar la lista después de eliminar
+    })
+    .catch(error => console.error("Error:", error));
+}
+
+// Función para confirmar un presupuesto
+function confirmarPresupuesto(id) {
+    fetch(API_URL + "?action=confirmarPresupuesto&id=" + id, {
+        method: "GET",
+        mode: "no-cors"
+    })
+    .then(() => {
+        cargarPresupuestos(); // Recargar la lista después de confirmar
+    })
+    .catch(error => console.error("Error:", error));
+}
