@@ -1,42 +1,109 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbykxo_v58ojAkxf50X6xpV49xyzC8CEKIOr-HAFTXVW7Nb5xCh3XjqqNrr2VWOez7HgDg/exec"; // Reemplaza con la URL de AppScript
-
-document.getElementById("presupuesto-form").addEventListener("submit", function(event) {
-    event.preventDefault(); // Evita el recargo de la página
-
-    // Capturar los valores del formulario
-    let nombreEvento = document.getElementById("nombre-evento").value;
-    let precio = document.getElementById("precio-evento").value;
-    let tipoEvento = document.getElementById("tipo-evento").value;
-    let cuotas = document.getElementById("cuotas-evento").value;
-    let fechaEvento = document.getElementById("fecha-evento").value;
-
-    // Crear el objeto de datos
-    let presupuesto = {
-        nombreEvento: nombreEvento,
-        precio: precio,
-        tipoEvento: tipoEvento,
-        cuotas: cuotas,
-        fechaEvento: fechaEvento
-    };
-
-    // Enviar los datos a AppScript
-    fetch(API_URL, {
-        method: "POST",
-        mode: "no-cors",  // Evita errores CORS
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(presupuesto)
-    }).then(() => {
-        // Mostrar mensaje de confirmación
-        document.getElementById("mensaje-confirmacion").style.display = "block";
-        
-        // Limpiar el formulario
-        document.getElementById("presupuesto-form").reset();
-
-        // Ocultar el mensaje después de 2 segundos
-        setTimeout(() => {
-            document.getElementById("mensaje-confirmacion").style.display = "none";
-        }, 2000);
-    }).catch(error => console.error("Error:", error));
+document.addEventListener("DOMContentLoaded", function () {
+  cargarPresupuestosEnviados();
 });
+
+function guardarPresupuesto(event) {
+  event.preventDefault();
+
+  let nombre = document.getElementById("nombre-evento").value;
+  let precio = document.getElementById("precio-evento").value;
+  let tipo = document.getElementById("tipo-evento").value;
+  let cuotas = document.getElementById("cuotas-evento").value;
+  let fecha = document.getElementById("fecha-evento").value;
+
+  let url = "https://script.google.com/macros/s/AKfycbykxo_v58ojAkxf50X6xpV49xyzC8CEKIOr-HAFTXVW7Nb5xCh3XjqqNrr2VWOez7HgDg/exec";
+
+  fetch(url, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "guardarPresupuesto",
+      nombre,
+      precio,
+      tipo,
+      cuotas,
+      fecha,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        document.getElementById("presupuesto-form").reset();
+        alert("Presupuesto guardado correctamente.");
+        cargarPresupuestosEnviados(); // Actualizar la lista automáticamente
+      } else {
+        alert("Error al guardar el presupuesto.");
+      }
+    })
+    .catch((error) => console.error("Error:", error));
+}
+
+function cargarPresupuestosEnviados() {
+  let url = "https://script.google.com/macros/s/AKfycbykxo_v58ojAkxf50X6xpV49xyzC8CEKIOr-HAFTXVW7Nb5xCh3XjqqNrr2VWOez7HgDg/exec";
+
+  fetch(url + "?action=obtenerPresupuestosEnviados")
+    .then((response) => response.json())
+    .then((data) => {
+      let lista = document.getElementById("lista-presupuestos");
+      lista.innerHTML = "";
+
+      data.forEach((evento) => {
+        let div = document.createElement("div");
+        div.classList.add("presupuesto-item");
+        div.innerHTML = `
+          <p><strong>${evento.nombre}</strong></p>
+          <p>Precio: $${evento.precio}</p>
+          <p>Tipo: ${evento.tipo}</p>
+          <p>Cuotas: ${evento.cuotas}</p>
+          <p>Fecha: ${evento.fecha}</p>
+          <button onclick="confirmarPresupuesto('${evento.id}')">✅ Confirmar</button>
+          <button onclick="eliminarPresupuesto('${evento.id}')">❌ Eliminar</button>
+        `;
+        lista.appendChild(div);
+      });
+    })
+    .catch((error) => console.error("Error:", error));
+}
+
+function confirmarPresupuesto(id) {
+  let url = "https://script.google.com/macros/s/AKfycbykxo_v58ojAkxf50X6xpV49xyzC8CEKIOr-HAFTXVW7Nb5xCh3XjqqNrr2VWOez7HgDg/exec";
+
+  fetch(url, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "confirmarPresupuesto",
+      id,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        alert("Presupuesto confirmado.");
+        cargarPresupuestosEnviados();
+      } else {
+        alert("Error al confirmar.");
+      }
+    })
+    .catch((error) => console.error("Error:", error));
+}
+
+function eliminarPresupuesto(id) {
+  let url = "https://script.google.com/macros/s/AKfycbykxo_v58ojAkxf50X6xpV49xyzC8CEKIOr-HAFTXVW7Nb5xCh3XjqqNrr2VWOez7HgDg/exec";
+
+  fetch(url, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "eliminarPresupuesto",
+      id,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        alert("Presupuesto eliminado.");
+        cargarPresupuestosEnviados();
+      } else {
+        alert("Error al eliminar.");
+      }
+    })
+    .catch((error) => console.error("Error:", error));
+}
