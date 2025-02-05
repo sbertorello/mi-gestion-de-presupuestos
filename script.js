@@ -79,8 +79,16 @@ function confirmarEvento(id) {
 
 function eliminarEvento(id) {
     // Aquí deberías enviar el ID del evento para eliminarlo
-    console.log("Eliminar evento con ID:", id);
-    // Implementar la lógica para eliminar este evento
+    fetch(API_URL + "?action=deletePresupuesto&id=" + id, {
+        method: "GET",
+        mode: "cors",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    }).then(() => {
+        console.log("Evento eliminado con ID:", id);
+        cargarPresupuestosEnviados(); // Recargar la lista después de eliminar
+    }).catch(error => console.error("Error al eliminar el evento:", error));
 }
 
 // Cargar la lista de presupuestos enviados cuando la página se muestre
@@ -88,8 +96,7 @@ function mostrarSeccion(seccion) {
     const secciones = document.querySelectorAll("main > section");
     secciones.forEach(s => s.style.display = "none");
     document.getElementById(seccion).style.display = "block";
-
-    if (seccion === "presupuestos-enviados") {
-        cargarPresupuestosEnviados();
+        if (seccion === "presupuestos-enviados") {
+        cargarPresupuestosEnviados(); // Cargar los presupuestos enviados cuando se muestra la sección
     }
 }
