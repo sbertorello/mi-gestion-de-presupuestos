@@ -1,77 +1,109 @@
-document.addEventListener("DOMContentLoaded", function () {
-    cargarPresupuestosEnviados();
-});
+const API_URL = "https://script.google.com/macros/s/AKfycbykxo_v58ojAkxf50X6xpV49xyzC8CEKIOr-HAFTXVW7Nb5xCh3XjqqNrr2VWOez7HgDg/exec"; // Reemplaza con la URL de AppScript
 
-function guardarPresupuesto() {
-    let fecha = document.getElementById("fecha").value;
-    let cliente = document.getElementById("cliente").value;
-    let detalle = document.getElementById("detalle").value;
-    let monto = document.getElementById("monto").value;
+// Función para mostrar la sección seleccionada
+function mostrarSeccion(seccion) {
+    document.querySelectorAll('section').forEach(section => {
+        section.style.display = 'none';
+    });
+    document.getElementById(seccion).style.display = 'block';
 
-    if (!fecha || !cliente || !detalle || !monto) {
-        alert("Completa todos los campos.");
-        return;
+    // Si la sección es "presupuestos-enviados", cargar los presupuestos
+    if (seccion === 'presupuestos-enviados') {
+        cargarPresupuestos();
     }
-
-    let data = { 
-        action: "guardarPresupuesto", 
-        fecha, 
-        cliente, 
-        detalle, 
-        monto 
-    };
-
-    fetch("https://script.google.com/macros/s/AKfycbykxo_v58ojAkxf50X6xpV49xyzC8CEKIOr-HAFTXVW7Nb5xCh3XjqqNrr2VWOez7HgDg/exec", {
-        method: "POST",
-        body: JSON.stringify(data),
-    })
-    .then(response => response.json())
-    .then(result => {
-        alert(result.mensaje);
-        cargarPresupuestosEnviados();
-    })
-    .catch(error => console.error("Error:", error));
 }
 
-function cargarPresupuestosEnviados() {
-    fetch("https://script.google.com/macros/s/AKfycbykxo_v58ojAkxf50X6xpV49xyzC8CEKIOr-HAFTXVW7Nb5xCh3XjqqNrr2VWOez7HgDg/exec?action=obtenerPresupuestosEnviados")
+// Función para guardar el presupuesto
+document.getElementById("presupuesto-form").addEventListener("submit", function(event) {
+    event.preventDefault(); // Evita el recargo de la página
+
+    // Capturar los valores del formulario
+    let nombreEvento = document.getElementById("nombre-evento").value;
+    let precio = document.getElementById("precio-evento").value;
+    let tipoEvento = document.getElementById("tipo-evento").value;
+    let cuotas = document.getElementById("cuotas-evento").value;
+    let fechaEvento = document.getElementById("fecha-evento").value;
+
+    // Crear el objeto de datos
+    let presupuesto = {
+        nombreEvento: nombreEvento,
+        precio: precio,
+        tipoEvento: tipoEvento,
+        cuotas: cuotas,
+        fechaEvento: fechaEvento
+    };
+
+    // Enviar los datos a AppScript
+    fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors",  // Evita errores CORS
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(presupuesto)
+    }).then(() => {
+        // Mostrar mensaje de confirmación
+        document.getElementById("mensaje-confirmacion").style.display = "block";
+        
+        // Limpiar el formulario
+        document.getElementById("presupuesto-form").reset();
+
+        // Ocultar el mensaje después de 2 segundos
+        setTimeout(() => {
+            document.getElementById("mensaje-confirmacion").style.display = "none";
+        }, 2000);
+    }).catch(error => console.error("Error:", error));
+});
+
+// Función para cargar los presupuestos desde Google Sheets
+function cargarPresupuestos() {
+    fetch(API_URL + "?action=getPresupuestos", {
+        method: "GET",
+        mode: "no-cors"
+    })
     .then(response => response.json())
     .then(data => {
-        let contenedor = document.getElementById("listaPresupuestosEnviados");
-        contenedor.innerHTML = "";
+        let listaPresupuestos = document.getElementById("lista-presupuestos");
+        listaPresupuestos.innerHTML = ""; // Limpiar la lista antes de agregar los nuevos elementos
 
         data.forEach(presupuesto => {
-            let fila = document.createElement("div");
-            fila.innerHTML = `
-                <p><strong>Cliente:</strong> ${presupuesto.cliente}</p>
-                <p><strong>Detalle:</strong> ${presupuesto.detalle}</p>
-                <p><strong>Monto:</strong> ${presupuesto.monto}</p>
-                <button onclick="confirmarPresupuesto('${presupuesto.id}')">Confirmar</button>
-                <button onclick="eliminarPresupuesto('${presupuesto.id}')">Eliminar</button>
-                <hr>
+            let div = document.createElement("div");
+            div.className = "presupuesto-item";
+            div.innerHTML = `
+                <h3>${presupuesto.nombreEvento}</h3>
+                <p>Precio: $${presupuesto.precio}</p>
+                <p>Tipo de Evento: ${presupuesto.tipoEvento}</p>
+                <p>Cuotas: ${presupuesto.cuotas}</p>
+                <p>Fecha del Evento: ${presupuesto.fechaEvento}</p>
+                <button onclick="eliminarPresupuesto(${presupuesto.ID})">Eliminar</button>
+                <button onclick="confirmarPresupuesto(${presupuesto.ID})">Confirmar</button>
             `;
-            contenedor.appendChild(fila);
+            listaPresupuestos.appendChild(div);
         });
     })
     .catch(error => console.error("Error:", error));
 }
 
-function confirmarPresupuesto(id) {
-    fetch("https://script.google.com/macros/s/AKfycbykxo_v58ojAkxf50X6xpV49xyzC8CEKIOr-HAFTXVW7Nb5xCh3XjqqNrr2VWOez7HgDg/exec?action=confirmarPresupuesto&id=" + id)
-    .then(response => response.json())
-    .then(result => {
-        alert(result.mensaje);
-        cargarPresupuestosEnviados();
+// Función para eliminar un presupuesto
+function eliminarPresupuesto(id) {
+    fetch(API_URL + "?action=eliminarPresupuesto&id=" + id, {
+        method: "GET",
+        mode: "no-cors"
+    })
+    .then(() => {
+        cargarPresupuestos(); // Recargar la lista después de eliminar
     })
     .catch(error => console.error("Error:", error));
 }
 
-function eliminarPresupuesto(id) {
-    fetch("https://script.google.com/macros/s/AKfycbykxo_v58ojAkxf50X6xpV49xyzC8CEKIOr-HAFTXVW7Nb5xCh3XjqqNrr2VWOez7HgDg/exec?action=eliminarPresupuesto&id=" + id)
-    .then(response => response.json())
-    .then(result => {
-        alert(result.mensaje);
-        cargarPresupuestosEnviados();
+// Función para confirmar un presupuesto
+function confirmarPresupuesto(id) {
+    fetch(API_URL + "?action=confirmarPresupuesto&id=" + id, {
+        method: "GET",
+        mode: "no-cors"
+    })
+    .then(() => {
+        cargarPresupuestos(); // Recargar la lista después de confirmar
     })
     .catch(error => console.error("Error:", error));
 }
