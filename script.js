@@ -84,7 +84,7 @@ function cargarPresupuestos() {
             listaPresupuestos.appendChild(div);
         });
     })
-    .catch(error => console.error("Error:", error));
+    .catch(error => console.error("Error al cargar presupuestos:", error));
 }
 
 // Función para eliminar un presupuesto
