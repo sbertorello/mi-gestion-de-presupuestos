@@ -1,63 +1,42 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbykxo_v58ojAkxf50X6xpV49xyzC8CEKIOr-HAFTXVW7Nb5xCh3XjqqNrr2VWOez7HgDg/exec"; // URL de tu AppScript
-const SHEET_URL = "https://script.google.com/macros/s/AKfycbykxo_v58ojAkxf50X6xpV49xyzC8CEKIOr-HAFTXVW7Nb5xCh3XjqqNrr2VWOez7HgDg/exec"; // URL para obtener datos
+const API_URL = "https://script.google.com/macros/s/AKfycbykxo_v58ojAkxf50X6xpV49xyzC8CEKIOr-HAFTXVW7Nb5xCh3XjqqNrr2VWOez7HgDg/exec"; // Reemplaza con la URL de AppScript
 
-// Función para mostrar la página correspondiente
-function mostrarSeccion(seccion) {
-    document.querySelectorAll("section").forEach(section => {
-        section.style.display = "none";
-    });
-    document.getElementById(seccion).style.display = "block";
-}
+document.getElementById("presupuesto-form").addEventListener("submit", function(event) {
+    event.preventDefault(); // Evita el recargo de la página
 
-// Cargar los presupuestos desde Google Sheets y mostrar en la página "Presupuestos Enviados"
-function cargarPresupuestos() {
-    fetch(SHEET_URL, {
-        method: "GET",
-    }).then(response => response.json())
-    .then(data => {
-        const listaPresupuestos = document.getElementById("lista-presupuestos");
-        listaPresupuestos.innerHTML = ""; // Limpiar la lista antes de agregar nuevos elementos
+    // Capturar los valores del formulario
+    let nombreEvento = document.getElementById("nombre-evento").value;
+    let precio = document.getElementById("precio-evento").value;
+    let tipoEvento = document.getElementById("tipo-evento").value;
+    let cuotas = document.getElementById("cuotas-evento").value;
+    let fechaEvento = document.getElementById("fecha-evento").value;
 
-        // Crear los casilleros para cada presupuesto
-        data.forEach(presupuesto => {
-            const divEvento = document.createElement("div");
-            divEvento.classList.add("evento");
+    // Crear el objeto de datos
+    let presupuesto = {
+        nombreEvento: nombreEvento,
+        precio: precio,
+        tipoEvento: tipoEvento,
+        cuotas: cuotas,
+        fechaEvento: fechaEvento
+    };
 
-            divEvento.innerHTML = `
-                <h3>${presupuesto.nombreEvento}</h3>
-                <p>Precio: $${presupuesto.precio}</p>
-                <p>Tipo de Evento: ${presupuesto.tipoEvento}</p>
-                <p>Cuotas: ${presupuesto.cuotas}</p>
-                <p>Fecha: ${presupuesto.fechaEvento}</p>
-                <button onclick="eliminarPresupuesto(${presupuesto.id})">Eliminar</button>
-                <button onclick="confirmarPresupuesto(${presupuesto.id})">Confirmar</button>
-            `;
-            
-            listaPresupuestos.appendChild(divEvento);
-        });
-    }).catch(error => console.error("Error al cargar los presupuestos:", error));
-}
-
-// Función para eliminar un presupuesto
-function eliminarPresupuesto(id) {
-    fetch(`${API_URL}?action=eliminar&id=${id}`, {
-        method: "GET",
+    // Enviar los datos a AppScript
+    fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors",  // Evita errores CORS
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(presupuesto)
     }).then(() => {
-        cargarPresupuestos(); // Recargar la lista después de eliminar
-    }).catch(error => console.error("Error al eliminar el presupuesto:", error));
-}
+        // Mostrar mensaje de confirmación
+        document.getElementById("mensaje-confirmacion").style.display = "block";
+        
+        // Limpiar el formulario
+        document.getElementById("presupuesto-form").reset();
 
-// Función para confirmar un presupuesto (moverlo a "Pagos en Curso")
-function confirmarPresupuesto(id) {
-    fetch(`${API_URL}?action=confirmar&id=${id}`, {
-        method: "GET",
-    }).then(() => {
-        cargarPresupuestos(); // Recargar la lista después de confirmar
-    }).catch(error => console.error("Error al confirmar el presupuesto:", error));
-}
-
-// Llamar a la función para cargar los presupuestos cuando se cargue la página
-document.addEventListener("DOMContentLoaded", () => {
-    mostrarSeccion('presupuestos-enviados'); // Asegurarse de que estemos en la sección correcta
-    cargarPresupuestos(); // Cargar los presupuestos al inicio
+        // Ocultar el mensaje después de 2 segundos
+        setTimeout(() => {
+            document.getElementById("mensaje-confirmacion").style.display = "none";
+        }, 2000);
+    }).catch(error => console.error("Error:", error));
 });
