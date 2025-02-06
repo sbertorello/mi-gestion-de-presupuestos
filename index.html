@@ -3,70 +3,46 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Gestión de Presupuestos</title>
+    <title>Presupuestos</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div class="container">
-      <!-- Página de Bienvenida (Presupuestos) -->
-      <div id="paginaPresupuestos">
-        <h1>Presupuestos</h1>
-        <form id="formPresupuesto">
-          <label for="nombreEvento">Nombre del Evento:</label>
-          <input type="text" id="nombreEvento" required />
+      <h1>Presupuestos</h1>
+      <form id="formPresupuesto">
+        <label for="nombreEvento">Nombre del Evento:</label>
+        <input type="text" id="nombreEvento" required />
 
-          <label for="precio">Precio:</label>
-          <input type="number" id="precio" required />
+        <label for="precio">Precio:</label>
+        <input type="number" id="precio" required />
 
-          <label for="tipoEvento">Tipo de Evento:</label>
-          <select id="tipoEvento" required>
-            <option value="Boda">Boda</option>
-            <option value="XV Años">XV Años</option>
-            <option value="Egreso">Egreso</option>
-            <option value="Institucional">Institucional</option>
-            <option value="Otro">Otro</option>
-          </select>
+        <label for="tipoEvento">Tipo de Evento:</label>
+        <select id="tipoEvento" required>
+          <option value="Boda">Boda</option>
+          <option value="XV Años">XV Años</option>
+          <option value="Egreso">Egreso</option>
+          <option value="Institucional">Institucional</option>
+          <option value="Otro">Otro</option>
+        </select>
 
-          <label for="cuotas">Cuotas:</label>
-          <select id="cuotas" required>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-          </select>
+        <label for="cuotas">Cuotas:</label>
+        <select id="cuotas" required>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+        </select>
 
-          <label for="fechaEvento">Fecha del Evento:</label>
-          <input type="date" id="fechaEvento" required />
+        <label for="fechaEvento">Fecha del Evento:</label>
+        <input type="date" id="fechaEvento" required />
 
-          <button type="submit">Guardar Datos</button>
-        </form>
-        <button onclick="mostrarPresupuestosEnviados()">Ver Presupuestos Enviados</button>
-      </div>
-
-      <!-- Página "Presupuestos Enviados" -->
-      <div id="paginaPresupuestosEnviados" style="display: none;">
-        <h1>Presupuestos Enviados</h1>
-        <div id="listaEventos"></div>
-        <button onclick="mostrarPaginaPresupuestos()">Volver a Presupuestos</button>
-      </div>
-
-      <!-- Página "Pagos en Curso" -->
-      <div id="paginaPagosEnCurso" style="display: none;">
-        <h1>Pagos en Curso</h1>
-        <div id="listaPagosEnCurso"></div>
-        <button onclick="mostrarPaginaPresupuestos()">Volver a Presupuestos</button>
-      </div>
-
-      <!-- Página "Pagos Completados" -->
-      <div id="paginaPagosCompletados" style="display: none;">
-        <h1>Pagos Completados</h1>
-        <div id="listaPagosCompletados"></div>
-        <button onclick="mostrarPaginaPresupuestos()">Volver a Presupuestos</button>
-      </div>
+        <button type="submit">Guardar Datos</button>
+      </form>
+      <a href="pagina2.html">Ver Presupuestos Enviados</a>
     </div>
 
-    <script src="script.js"></script>
+    <script src="script-index.js"></script>
   </body>
 </html>
