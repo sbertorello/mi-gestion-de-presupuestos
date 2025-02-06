@@ -1,95 +1,93 @@
 document.addEventListener("DOMContentLoaded", function () {
-    cargarPresupuestosEnviados();
+    cargarPresupuestos();
 });
 
-// Función para guardar un presupuesto en Google Sheets
 function guardarPresupuesto(event) {
-    event.preventDefault(); // Evita el recargo de la página
+    event.preventDefault();
 
-    let nombreEvento = document.getElementById("nombre-evento").value;
-    let precioEvento = document.getElementById("precio-evento").value;
-    let tipoEvento = document.getElementById("tipo-evento").value;
-    let cuotasEvento = document.getElementById("cuotas-evento").value;
-    let fechaEvento = document.getElementById("fecha-evento").value;
+    let nombre = document.getElementById("nombre-evento").value;
+    let precio = document.getElementById("precio-evento").value;
+    let tipo = document.getElementById("tipo-evento").value;
+    let cuotas = document.getElementById("cuotas-evento").value;
+    let fecha = document.getElementById("fecha-evento").value;
 
-    if (!nombreEvento || !precioEvento || !fechaEvento) {
+    if (!nombre || !precio || !tipo || !cuotas || !fecha) {
         alert("Por favor, completa todos los campos.");
         return;
     }
 
-    let datos = {
-        nombre: nombreEvento,
-        precio: precioEvento,
-        tipo: tipoEvento,
-        cuotas: cuotasEvento,
-        fecha: fechaEvento,
+    let presupuesto = {
+        nombre: nombre,
+        precio: precio,
+        tipo: tipo,
+        cuotas: cuotas,
+        fecha: fecha
     };
 
     fetch("https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec", {
         method: "POST",
-        body: JSON.stringify(datos),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(presupuesto)
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert("Presupuesto guardado correctamente.");
             document.getElementById("presupuesto-form").reset();
-            cargarPresupuestosEnviados();
+            alert("Presupuesto guardado correctamente.");
+            cargarPresupuestos();
         } else {
             alert("Error al guardar el presupuesto.");
         }
     })
-    .catch(error => console.error("Error:", error));
+    .catch(error => {
+        console.error("Error:", error);
+        alert("Hubo un problema al conectar con el servidor.");
+    });
 }
 
-// Función para cargar los presupuestos en la segunda página
-function cargarPresupuestosEnviados() {
-    fetch("https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec?action=leer")
+function cargarPresupuestos() {
+    fetch("https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec")
     .then(response => response.json())
     .then(data => {
-        let listaPresupuestos = document.getElementById("lista-presupuestos");
-        listaPresupuestos.innerHTML = ""; // Limpia la lista antes de actualizar
+        let lista = document.getElementById("lista-presupuestos");
+        lista.innerHTML = "";
 
-        data.forEach(presupuesto => {
+        data.forEach((presupuesto, index) => {
             let div = document.createElement("div");
-            div.className = "presupuesto-item";
+            div.classList.add("presupuesto-item");
             div.innerHTML = `
-                <p><strong>${presupuesto.nombre}</strong></p>
-                <button onclick="confirmarPresupuesto('${presupuesto.id}')">Confirmar</button>
-                <button onclick="eliminarPresupuesto('${presupuesto.id}')">Eliminar</button>
+                <p><strong>Evento:</strong> ${presupuesto.nombre}</p>
+                <p><strong>Precio:</strong> $${presupuesto.precio}</p>
+                <p><strong>Tipo:</strong> ${presupuesto.tipo}</p>
+                <p><strong>Cuotas:</strong> ${presupuesto.cuotas}</p>
+                <p><strong>Fecha:</strong> ${presupuesto.fecha}</p>
+                <button onclick="confirmarPresupuesto(${index})">Confirmar</button>
+                <button onclick="eliminarPresupuesto(${index})">Eliminar</button>
             `;
-            listaPresupuestos.appendChild(div);
+            lista.appendChild(div);
         });
     })
-    .catch(error => console.error("Error:", error));
+    .catch(error => {
+        console.error("Error:", error);
+        alert("No se pudo cargar la lista de presupuestos.");
+    });
 }
 
-// Función para eliminar un presupuesto
-function eliminarPresupuesto(id) {
-    fetch(`https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec?action=eliminar&id=${id}`)
+function eliminarPresupuesto(index) {
+    fetch("https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec?index=" + index, {
+        method: "DELETE"
+    })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert("Presupuesto eliminado.");
-            cargarPresupuestosEnviados();
+            alert("Presupuesto eliminado correctamente.");
+            cargarPresupuestos();
         } else {
             alert("Error al eliminar el presupuesto.");
         }
     })
-    .catch(error => console.error("Error:", error));
-}
-
-// Función para confirmar un presupuesto (pasar a "Pagos en Curso")
-function confirmarPresupuesto(id) {
-    fetch(`https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec?action=confirmar&id=${id}`)
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert("Presupuesto confirmado.");
-            cargarPresupuestosEnviados();
-        } else {
-            alert("Error al confirmar el presupuesto.");
-        }
-    })
-    .catch(error => console.error("Error:", error));
+    .catch(error => {
+        console.error("Error:", error);
+        alert("No se pudo eliminar el presupuesto.");
+    });
 }
