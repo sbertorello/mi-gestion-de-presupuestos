@@ -1,99 +1,47 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestión de Presupuestos</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <nav class="navigation">
-        <ul>
-            <li><button class="nav-btn active" data-page="presupuestos">Presupuestos</button></li>
-            <li><button class="nav-btn" data-page="presupuestos-enviados">Presupuestos Enviados</button></li>
-            <li><button class="nav-btn" data-page="pagos-curso">Pagos en Curso</button></li>
-            <li><button class="nav-btn" data-page="pagos-completados">Pagos Completados</button></li>
-        </ul>
-    </nav>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Presupuestos</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Presupuestos</h1>
+      <form id="formPresupuesto">
+        <label for="nombreEvento">Nombre del Evento:</label>
+        <input type="text" id="nombreEvento" required />
 
-    <!-- Página de Presupuestos -->
-    <div class="page active" id="presupuestos">
-        <h2>Nuevo Presupuesto</h2>
-        <form id="presupuestoForm">
-            <div class="form-group">
-                <label for="nombreEvento">Nombre del Evento:</label>
-                <input type="text" id="nombreEvento" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="precio">Precio:</label>
-                <input type="number" id="precio" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="tipoEvento">Tipo de Evento:</label>
-                <select id="tipoEvento" required>
-                    <option value="Boda">Boda</option>
-                    <option value="XV Años">XV Años</option>
-                    <option value="Egreso">Egreso</option>
-                    <option value="Institucional">Institucional</option>
-                    <option value="Otro">Otro</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="cuotas">Cuotas:</label>
-                <select id="cuotas" required>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="fechaEvento">Fecha del Evento:</label>
-                <input type="date" id="fechaEvento" required>
-            </div>
-            
-            <button type="submit" class="submit-btn">Guardar Datos</button>
-        </form>
+        <label for="precio">Precio:</label>
+        <input type="number" id="precio" required />
+
+        <label for="tipoEvento">Tipo de Evento:</label>
+        <select id="tipoEvento" required>
+          <option value="Boda">Boda</option>
+          <option value="XV Años">XV Años</option>
+          <option value="Egreso">Egreso</option>
+          <option value="Institucional">Institucional</option>
+          <option value="Otro">Otro</option>
+        </select>
+
+        <label for="cuotas">Cuotas:</label>
+        <select id="cuotas" required>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+        </select>
+
+        <label for="fechaEvento">Fecha del Evento:</label>
+        <input type="date" id="fechaEvento" required />
+
+        <button type="submit">Guardar Datos</button>
+      </form>
     </div>
-
-    <!-- Página de Presupuestos Enviados -->
-    <div class="page" id="presupuestos-enviados">
-        <h2>Presupuestos Enviados</h2>
-        <div id="presupuestosEnviadosContainer" class="eventos-container"></div>
-    </div>
-
-    <!-- Página de Pagos en Curso -->
-    <div class="page" id="pagos-curso">
-        <h2>Pagos en Curso</h2>
-        <div id="pagosEnCursoContainer" class="eventos-container"></div>
-    </div>
-
-    <!-- Página de Pagos Completados -->
-    <div class="page" id="pagos-completados">
-        <h2>Pagos Completados</h2>
-        <div id="pagosCompletadosContainer" class="eventos-container"></div>
-    </div>
-
-    <!-- Template para las tarjetas de eventos -->
-    <template id="evento-template">
-        <div class="evento-card">
-            <h3 class="evento-nombre"></h3>
-            <div class="evento-detalles">
-                <p>Precio: <span class="evento-precio"></span></p>
-                <p>Tipo: <span class="evento-tipo"></span></p>
-                <p>Cuotas: <span class="evento-cuotas"></span></p>
-                <p>Fecha: <span class="evento-fecha"></span></p>
-            </div>
-            <div class="evento-acciones"></div>
-        </div>
-    </template>
 
     <script src="script.js"></script>
-</body>
+  </body>
 </html>
