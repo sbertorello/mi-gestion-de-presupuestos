@@ -1,54 +1,41 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec";
 
 document.addEventListener("DOMContentLoaded", function () {
-  document
-    .getElementById("formPresupuesto")
-    .addEventListener("submit", function (e) {
-      e.preventDefault();
+  document.getElementById("formPresupuesto").addEventListener("submit", function (e) {
+    e.preventDefault();
 
-      const nombreEvento = document.getElementById("nombreEvento").value;
-      const precio = document.getElementById("precio").value;
-      const tipoEvento = document.getElementById("tipoEvento").value;
-      const cuotas = document.getElementById("cuotas").value;
-      const fechaEvento = document.getElementById("fechaEvento").value;
+    const nombreEvento = document.getElementById("nombreEvento").value;
+    const precio = document.getElementById("precio").value;
+    const tipoEvento = document.getElementById("tipoEvento").value;
+    const cuotas = document.getElementById("cuotas").value;
+    const fechaEvento = document.getElementById("fechaEvento").value;
 
-      const data = {
-        nombreEvento,
-        precio,
-        tipoEvento,
-        cuotas,
-        fechaEvento,
-      };
+    const data = {
+      nombreEvento,
+      precio,
+      tipoEvento,
+      cuotas,
+      fechaEvento,
+    };
 
-      fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify(data),
+    fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then(() => {
+        alert("Datos guardados correctamente");
+        document.getElementById("formPresupuesto").reset();
+        cargarEventos();
       })
-        .then((response) => response.text())
-        .then(() => {
-          alert("Datos guardados correctamente");
-          document.getElementById("formPresupuesto").reset();
-          mostrarPresupuestosEnviados(); // Recargar la lista automáticamente
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-          alert("Hubo un error al guardar los datos");
-        });
-    });
-});
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("Hubo un error al guardar los datos");
+      });
+  });
 
-function mostrarPresupuestosEnviados() {
-  document.getElementById("paginaPresupuestos").style.display = "none";
-  document.getElementById("paginaPresupuestosEnviados").style.display = "block";
   cargarEventos();
-}
-
-function mostrarPaginaPresupuestos() {
-  document.getElementById("paginaPresupuestosEnviados").style.display = "none";
-  document.getElementById("paginaPagosEnCurso").style.display = "none";
-  document.getElementById("paginaPagosCompletados").style.display = "none";
-  document.getElementById("paginaPresupuestos").style.display = "block";
-}
+});
 
 function cargarEventos() {
   fetch(API_URL)
@@ -79,8 +66,7 @@ function cargarEventos() {
 
           eventoDiv.querySelector("h3").addEventListener("click", function () {
             const detalles = eventoDiv.querySelector(".detalles");
-            detalles.style.display =
-              detalles.style.display === "none" ? "block" : "none";
+            detalles.style.display = detalles.style.display === "none" ? "block" : "none";
           });
 
           listaEventos.appendChild(eventoDiv);
