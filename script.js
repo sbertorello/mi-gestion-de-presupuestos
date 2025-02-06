@@ -1,105 +1,102 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec"; // URL de tu Web App
 
-document.addEventListener("DOMContentLoaded", function () {
-  document.getElementById("formPresupuesto").addEventListener("submit", function (e) {
-    e.preventDefault();
+// Función para cargar eventos desde Google Sheets
+async function cargarEventos() {
+  try {
+    const respuesta = await fetch(API_URL);
+    const eventos = await respuesta.json();
 
-    const nombreEvento = document.getElementById("nombreEvento").value;
-    const precio = document.getElementById("precio").value;
-    const tipoEvento = document.getElementById("tipoEvento").value;
-    const cuotas = document.getElementById("cuotas").value;
-    const fechaEvento = document.getElementById("fechaEvento").value;
+    const lista = document.getElementById("listaEventos");
+    lista.innerHTML = ""; // Limpia la lista antes de agregar nuevos datos
 
-    const data = {
-      nombreEvento,
-      precio,
-      tipoEvento,
-      cuotas,
-      fechaEvento,
-    };
+    eventos.forEach(evento => {
+      const item = document.createElement("li");
+      item.innerHTML = `
+        <strong>${evento.nombreEvento}</strong> - ${evento.tipoEvento} - $${evento.precio} 
+        <br>Fecha: ${evento.fechaEvento} | Cuotas: ${evento.cuotas} | Estado: ${evento.estado}
+        <br>
+        <button onclick="confirmarEvento('${evento.id}')">Confirmar</button>
+        <button onclick="eliminarEvento('${evento.id}')">Eliminar</button>
+      `;
+      lista.appendChild(item);
+    });
+  } catch (error) {
+    console.error("Error al cargar los eventos:", error);
+  }
+}
 
-    fetch(API_URL, {
+// Función para guardar un nuevo presupuesto
+async function guardarEvento() {
+  const id = Date.now().toString();
+  const nombreEvento = document.getElementById("nombreEvento").value;
+  const precio = document.getElementById("precio").value;
+  const tipoEvento = document.getElementById("tipoEvento").value;
+  const cuotas = document.getElementById("cuotas").value;
+  const fechaEvento = document.getElementById("fechaEvento").value;
+
+  const nuevoEvento = {
+    id,
+    nombreEvento,
+    precio,
+    tipoEvento,
+    cuotas,
+    fechaEvento,
+    estado: "Pendiente"
+  };
+
+  try {
+    await fetch(API_URL, {
       method: "POST",
-      body: JSON.stringify(data),
-    })
-      .then((response) => response.json())
-      .then(() => {
-        alert("Datos guardados correctamente");
-        document.getElementById("formPresupuesto").reset();
-        cargarEventos();
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        alert("Hubo un error al guardar los datos");
-      });
-  });
-
-  cargarEventos();
-});
-
-function cargarEventos() {
-  fetch(API_URL)
-    .then((response) => response.json())
-    .then((data) => {
-      const listaEventos = document.getElementById("listaEventos");
-      listaEventos.innerHTML = "";
-
-      data.forEach((evento) => {
-        if (evento.estado === "Pendiente") {
-          const eventoDiv = document.createElement("div");
-          eventoDiv.className = "evento";
-
-          eventoDiv.innerHTML = `
-            <h3>${evento.nombreEvento}</h3>
-            <div class="detalles" style="display: none;">
-              <p><strong>Precio:</strong> $${evento.precio}</p>
-              <p><strong>Tipo de Evento:</strong> ${evento.tipoEvento}</p>
-              <p><strong>Cuotas:</strong> ${evento.cuotas}</p>
-              <p><strong>Fecha del Evento:</strong> ${evento.fechaEvento}</p>
-              <p><strong>Estado:</strong> ${evento.estado}</p>
-              <div class="botones">
-                <button class="eliminar" onclick="eliminarEvento('${evento.id}')">Eliminar</button>
-                <button class="confirmar" onclick="confirmarEvento('${evento.id}')">Confirmar</button>
-              </div>
-            </div>
-          `;
-
-          eventoDiv.querySelector("h3").addEventListener("click", function () {
-            const detalles = eventoDiv.querySelector(".detalles");
-            detalles.style.display = detalles.style.display === "none" ? "block" : "none";
-          });
-
-          listaEventos.appendChild(eventoDiv);
-        }
-      });
-    })
-    .catch((error) => {
-      console.error("Error:", error);
+      body: JSON.stringify(nuevoEvento),
+      headers: { "Content-Type": "application/json" }
     });
+
+    alert("Evento guardado con éxito.");
+    cargarEventos(); // Recargar la lista después de guardar
+  } catch (error) {
+    console.error("Error al guardar el evento:", error);
+  }
 }
 
-function eliminarEvento(id) {
-  fetch(`${API_URL}?action=eliminar&id=${id}`)
-    .then((response) => response.text())
-    .then(() => {
-      alert("Evento eliminado correctamente");
-      cargarEventos();
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-      alert("Hubo un error al eliminar el evento");
+// Función para confirmar evento (cambia el estado a "Confirmado")
+async function confirmarEvento(id) {
+  try {
+    const respuesta = await fetch(API_URL);
+    const eventos = await respuesta.json();
+
+    const evento = eventos.find(e => e.id === id);
+    if (!evento) return alert("Evento no encontrado.");
+
+    evento.estado = "Confirmado";
+
+    await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify(evento),
+      headers: { "Content-Type": "application/json" }
     });
+
+    alert("Evento confirmado.");
+    cargarEventos();
+  } catch (error) {
+    console.error("Error al confirmar evento:", error);
+  }
 }
 
-function confirmarEvento(id) {
-  fetch(`${API_URL}?action=confirmar&id=${id}`)
-    .then((response) => response.text())
-    .then(() => {
-      alert("Evento confirmado correctamente");
-      cargarEventos();
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-      alert("Hubo un error al confirmar el evento");
+// Función para eliminar evento
+async function eliminarEvento(id) {
+  try {
+    await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({ eliminar: id }),
+      headers: { "Content-Type": "application/json" }
     });
+
+    alert("Evento eliminado.");
+    cargarEventos();
+  } catch (error) {
+    console.error("Error al eliminar evento:", error);
+  }
 }
+
+// Cargar eventos al iniciar la página
+document.addEventListener("DOMContentLoaded", cargarEventos);
