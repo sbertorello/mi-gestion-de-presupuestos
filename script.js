@@ -98,5 +98,8 @@ async function eliminarEvento(id) {
   }
 }
 
+// Evento para capturar el botón de guardar
+document.getElementById("guardarEvento").addEventListener("click", guardarEvento);
+
 // Cargar eventos al iniciar la página
 document.addEventListener("DOMContentLoaded", cargarEventos);
