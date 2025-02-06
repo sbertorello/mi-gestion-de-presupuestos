@@ -61,7 +61,6 @@ function cargarPresupuestos() {
                 <p><strong>Tipo:</strong> ${presupuesto.tipo}</p>
                 <p><strong>Cuotas:</strong> ${presupuesto.cuotas}</p>
                 <p><strong>Fecha:</strong> ${presupuesto.fecha}</p>
-                <button onclick="confirmarPresupuesto(${index})">Confirmar</button>
                 <button onclick="eliminarPresupuesto(${index})">Eliminar</button>
             `;
             lista.appendChild(div);
