@@ -56,7 +56,7 @@ function cargarEventos() {
       const listaEventos = document.getElementById("listaEventos");
       listaEventos.innerHTML = "";
 
-      data.forEach((evento, index) => {
+      data.forEach((evento) => {
         if (evento.estado === "Pendiente") {
           const eventoDiv = document.createElement("div");
           eventoDiv.className = "evento";
