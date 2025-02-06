@@ -25,10 +25,14 @@ document.addEventListener("DOMContentLoaded", function () {
         mode: "cors", // Asegúrate de que el modo sea "cors"
         body: JSON.stringify(data),
       })
-        .then((response) => response.json())
+        .then((response) => response.json()) // Convertir la respuesta a JSON
         .then((result) => {
-          alert("Datos guardados correctamente");
-          document.getElementById("formPresupuesto").reset();
+          if (result.success) {
+            alert(result.message); // Mostrar mensaje de éxito
+            document.getElementById("formPresupuesto").reset(); // Borrar el formulario
+          } else {
+            throw new Error("Error al guardar los datos");
+          }
         })
         .catch((error) => {
           console.error("Error:", error);
