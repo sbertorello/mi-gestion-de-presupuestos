@@ -24,7 +24,7 @@ function guardarPresupuesto(event) {
         fecha: fecha
     };
 
-    fetch("https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec", {
+    fetch("https://script.google.com/macros/s/AKfycbykxo_v58ojAkxf50X6xpV49xyzC8CEKIOr-HAFTXVW7Nb5xCh3XjqqNrr2VWOez7HgDg/exec", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(presupuesto)
@@ -46,7 +46,7 @@ function guardarPresupuesto(event) {
 }
 
 function cargarPresupuestos() {
-    fetch("https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec")
+    fetch("https://script.google.com/macros/s/AKfycbykxo_v58ojAkxf50X6xpV49xyzC8CEKIOr-HAFTXVW7Nb5xCh3XjqqNrr2VWOez7HgDg/exec")
     .then(response => response.json())
     .then(data => {
         let lista = document.getElementById("lista-presupuestos");
@@ -74,7 +74,7 @@ function cargarPresupuestos() {
 }
 
 function eliminarPresupuesto(index) {
-    fetch("https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec?index=" + index, {
+    fetch("https://script.google.com/macros/s/AKfycbykxo_v58ojAkxf50X6xpV49xyzC8CEKIOr-HAFTXVW7Nb5xCh3XjqqNrr2VWOez7HgDg/exec?index=" + index, {
         method: "DELETE"
     })
     .then(response => response.json())
