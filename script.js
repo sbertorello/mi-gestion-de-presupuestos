@@ -1,5 +1,5 @@
 // URL de tu Google Apps Script Web App (reemplazar con tu URL cuando la tengas)
-const SCRIPT_URL = 'TU_URL_DE_GOOGLE_SCRIPT_WEB_APP';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzHXNrzr3X7xf46Eo78m5rc5K_IvNuEO2o84oAMgSyISpJTDBjJ3GPAmOhSvHpYRNhVrg/exec';
 
 // Funciones de navegación
 document.querySelectorAll('.nav-btn').forEach(button => {
