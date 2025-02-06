@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbxK9AeNgjZml5szfRhpQ1jC-OCZx6WqQ7dZKbCzN7FejnlQRsYit4rMyd5T9c-WeRjT/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec";
 
 document.addEventListener("DOMContentLoaded", function () {
   document
@@ -25,9 +25,10 @@ document.addEventListener("DOMContentLoaded", function () {
         body: JSON.stringify(data),
       })
         .then((response) => response.text())
-        .then((result) => {
+        .then(() => {
           alert("Datos guardados correctamente");
           document.getElementById("formPresupuesto").reset();
+          mostrarPresupuestosEnviados(); // Recargar la lista automáticamente
         })
         .catch((error) => {
           console.error("Error:", error);
@@ -68,6 +69,7 @@ function cargarEventos() {
               <p><strong>Tipo de Evento:</strong> ${evento.tipoEvento}</p>
               <p><strong>Cuotas:</strong> ${evento.cuotas}</p>
               <p><strong>Fecha del Evento:</strong> ${evento.fechaEvento}</p>
+              <p><strong>Estado:</strong> ${evento.estado}</p>
               <div class="botones">
                 <button class="eliminar" onclick="eliminarEvento('${evento.id}')">Eliminar</button>
                 <button class="confirmar" onclick="confirmarEvento('${evento.id}')">Confirmar</button>
@@ -93,7 +95,7 @@ function cargarEventos() {
 function eliminarEvento(id) {
   fetch(`${API_URL}?action=eliminar&id=${id}`)
     .then((response) => response.text())
-    .then((result) => {
+    .then(() => {
       alert("Evento eliminado correctamente");
       cargarEventos();
     })
@@ -106,7 +108,7 @@ function eliminarEvento(id) {
 function confirmarEvento(id) {
   fetch(`${API_URL}?action=confirmar&id=${id}`)
     .then((response) => response.text())
-    .then((result) => {
+    .then(() => {
       alert("Evento confirmado correctamente");
       cargarEventos();
     })
