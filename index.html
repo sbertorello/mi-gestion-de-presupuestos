@@ -1,80 +1,99 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestión de Presupuestos y Pagos</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión de Presupuestos</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <nav>
-    <ul id="nav-links">
-      <li><a href="#" onclick="mostrarSeccion('presupuestos')">Presupuestos</a></li>
-      <li><a href="#" onclick="mostrarSeccion('presupuestos-enviados')">Presupuestos Enviados</a></li>
-      <li><a href="#" onclick="mostrarSeccion('pagos-en-curso')">Pagos en Curso</a></li>
-      <li><a href="#" onclick="mostrarSeccion('pagos-completados')">Pagos Completados</a></li>
-    </ul>
-  </nav>
+    <nav class="navigation">
+        <ul>
+            <li><button class="nav-btn active" data-page="presupuestos">Presupuestos</button></li>
+            <li><button class="nav-btn" data-page="presupuestos-enviados">Presupuestos Enviados</button></li>
+            <li><button class="nav-btn" data-page="pagos-curso">Pagos en Curso</button></li>
+            <li><button class="nav-btn" data-page="pagos-completados">Pagos Completados</button></li>
+        </ul>
+    </nav>
 
-  <main>
-    <!-- Página 1: Presupuestos -->
-    <section id="presupuestos">
-      <h1>Presupuestos</h1>
-      <form id="presupuesto-form" onsubmit="guardarPresupuesto(event)">
-        <label for="nombre-evento">Nombre del Evento:</label>
-        <input type="text" id="nombre-evento" name="nombre-evento" required>
+    <!-- Página de Presupuestos -->
+    <div class="page active" id="presupuestos">
+        <h2>Nuevo Presupuesto</h2>
+        <form id="presupuestoForm">
+            <div class="form-group">
+                <label for="nombreEvento">Nombre del Evento:</label>
+                <input type="text" id="nombreEvento" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="precio">Precio:</label>
+                <input type="number" id="precio" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="tipoEvento">Tipo de Evento:</label>
+                <select id="tipoEvento" required>
+                    <option value="Boda">Boda</option>
+                    <option value="XV Años">XV Años</option>
+                    <option value="Egreso">Egreso</option>
+                    <option value="Institucional">Institucional</option>
+                    <option value="Otro">Otro</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="cuotas">Cuotas:</label>
+                <select id="cuotas" required>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="fechaEvento">Fecha del Evento:</label>
+                <input type="date" id="fechaEvento" required>
+            </div>
+            
+            <button type="submit" class="submit-btn">Guardar Datos</button>
+        </form>
+    </div>
 
-        <label for="precio-evento">Precio:</label>
-        <input type="number" id="precio-evento" name="precio-evento" required>
+    <!-- Página de Presupuestos Enviados -->
+    <div class="page" id="presupuestos-enviados">
+        <h2>Presupuestos Enviados</h2>
+        <div id="presupuestosEnviadosContainer" class="eventos-container"></div>
+    </div>
 
-        <label for="tipo-evento">Tipo de Evento:</label>
-        <select id="tipo-evento" name="tipo-evento">
-          <option value="Boda">Boda</option>
-          <option value="XV Años">XV Años</option>
-          <option value="Egreso">Egreso</option>
-          <option value="Institucional">Institucional</option>
-          <option value="Otro">Otro</option>
-        </select>
+    <!-- Página de Pagos en Curso -->
+    <div class="page" id="pagos-curso">
+        <h2>Pagos en Curso</h2>
+        <div id="pagosEnCursoContainer" class="eventos-container"></div>
+    </div>
 
-        <label for="cuotas-evento">Cuotas:</label>
-        <select id="cuotas-evento" name="cuotas-evento">
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-          <option value="6">6</option>
-        </select>
+    <!-- Página de Pagos Completados -->
+    <div class="page" id="pagos-completados">
+        <h2>Pagos Completados</h2>
+        <div id="pagosCompletadosContainer" class="eventos-container"></div>
+    </div>
 
-        <label for="fecha-evento">Fecha del Evento:</label>
-        <input type="date" id="fecha-evento" name="fecha-evento" required>
+    <!-- Template para las tarjetas de eventos -->
+    <template id="evento-template">
+        <div class="evento-card">
+            <h3 class="evento-nombre"></h3>
+            <div class="evento-detalles">
+                <p>Precio: <span class="evento-precio"></span></p>
+                <p>Tipo: <span class="evento-tipo"></span></p>
+                <p>Cuotas: <span class="evento-cuotas"></span></p>
+                <p>Fecha: <span class="evento-fecha"></span></p>
+            </div>
+            <div class="evento-acciones"></div>
+        </div>
+    </template>
 
-        <button type="submit">Guardar Datos</button>
-      </form>
-      <p id="mensaje-confirmacion" style="display: none;">Evento guardado correctamente.</p>
-    </section>
-
-    <!-- Página 2: Presupuestos Enviados -->
-    <section id="presupuestos-enviados" style="display: none;">
-      <h1>Presupuestos Enviados</h1>
-      <div id="lista-presupuestos"></div>
-    </section>
-
-    <!-- Página 3: Pagos en Curso -->
-    <section id="pagos-en-curso" style="display: none;">
-      <h1>Pagos en Curso</h1>
-      <div id="lista-pagos"></div>
-    </section>
-
-    <!-- Página 4: Pagos Completados -->
-    <section id="pagos-completados" style="display: none;">
-      <h1>Pagos Completados</h1>
-      <div id="lista-completados"></div>
-    </section>
-  </main>
-
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
-
-
