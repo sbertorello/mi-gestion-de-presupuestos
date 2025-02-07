@@ -6,12 +6,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function cargarEventos() {
   fetch(API_URL)
-    .then((response) => response.json())
-    .then((data) => {
+    .then(response => response.json())
+    .then(data => {
       const listaEventos = document.getElementById("listaEventos");
       listaEventos.innerHTML = "";
 
-      data.forEach((evento) => {
+      data.forEach(evento => {
         if (evento.estado === "Pendiente") {
           const eventoDiv = document.createElement("div");
           eventoDiv.className = "evento";
@@ -39,41 +39,51 @@ function cargarEventos() {
         }
       });
     })
-    .catch((error) => {
-      console.error("Error:", error);
+    .catch(error => {
+      console.error("Error al cargar eventos:", error);
     });
 }
 
 function eliminarEvento(id) {
+  if (!id) {
+    alert("Error: ID de evento no válido");
+    return;
+  }
+
   fetch(`${API_URL}?action=eliminar&id=${id}`)
-    .then((response) => response.json())
-    .then((result) => {
+    .then(response => response.json())
+    .then(result => {
       if (result.success) {
         alert(result.message);
-        cargarEventos(); // Recargar la lista de eventos
+        cargarEventos();
       } else {
         throw new Error(result.message);
       }
     })
-    .catch((error) => {
-      console.error("Error:", error);
-      alert("Hubo un error al eliminar el evento");
+    .catch(error => {
+      console.error("Error al eliminar evento:", error);
+      alert("Error al eliminar el evento");
     });
 }
 
 function confirmarEvento(id) {
+  if (!id) {
+    alert("Error: ID de evento no válido");
+    return;
+  }
+
   fetch(`${API_URL}?action=confirmar&id=${id}`)
-    .then((response) => response.json())
-    .then((result) => {
+    .then(response => response.json())
+    .then(result => {
       if (result.success) {
         alert(result.message);
-        cargarEventos(); // Recargar la lista de eventos
+        cargarEventos();
       } else {
         throw new Error(result.message);
       }
     })
-    .catch((error) => {
-      console.error("Error:", error);
-      alert("Hubo un error al confirmar el evento");
+    .catch(error => {
+      console.error("Error al confirmar evento:", error);
+      alert("Error al confirmar el evento");
     });
 }
