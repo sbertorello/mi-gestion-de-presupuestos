@@ -24,8 +24,8 @@ function cargarEventos() {
               <p><strong>Cuotas:</strong> ${evento.cuotas}</p>
               <p><strong>Fecha del Evento:</strong> ${evento.fechaEvento}</p>
               <div class="botones">
-                <button class="eliminar" onclick="eliminarEvento('${evento.id}')">Eliminar</button>
-                <button class="confirmar" onclick="confirmarEvento('${evento.id}')">Confirmar</button>
+                <button class="eliminar" data-id="${evento.id}">Eliminar</button>
+                <button class="confirmar" data-id="${evento.id}">Confirmar</button>
               </div>
             </div>
           `;
@@ -37,6 +37,18 @@ function cargarEventos() {
 
           listaEventos.appendChild(eventoDiv);
         }
+      });
+
+      document.querySelectorAll(".eliminar").forEach(btn => {
+        btn.addEventListener("click", function () {
+          eliminarEvento(this.dataset.id);
+        });
+      });
+
+      document.querySelectorAll(".confirmar").forEach(btn => {
+        btn.addEventListener("click", function () {
+          confirmarEvento(this.dataset.id);
+        });
       });
     })
     .catch(error => {
@@ -50,7 +62,7 @@ function eliminarEvento(id) {
     return;
   }
 
-  fetch(`${API_URL}?action=eliminar&id=${id}`)
+  fetch(`${API_URL}?action=eliminar&id=${encodeURIComponent(id)}`)
     .then(response => response.json())
     .then(result => {
       if (result.success) {
@@ -72,7 +84,7 @@ function confirmarEvento(id) {
     return;
   }
 
-  fetch(`${API_URL}?action=confirmar&id=${id}`)
+  fetch(`${API_URL}?action=confirmar&id=${encodeURIComponent(id)}`)
     .then(response => response.json())
     .then(result => {
       if (result.success) {
