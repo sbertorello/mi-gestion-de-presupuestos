@@ -47,10 +47,14 @@ function cargarEventos() {
 
 function eliminarEvento(id) {
   fetch(`${API_URL}?action=eliminar&id=${id}`)
-    .then((response) => response.text())
+    .then((response) => response.json())
     .then((result) => {
-      alert("Evento eliminado correctamente");
-      cargarEventos();
+      if (result.success) {
+        alert(result.message);
+        cargarEventos(); // Recargar la lista de eventos
+      } else {
+        throw new Error(result.message);
+      }
     })
     .catch((error) => {
       console.error("Error:", error);
@@ -60,10 +64,14 @@ function eliminarEvento(id) {
 
 function confirmarEvento(id) {
   fetch(`${API_URL}?action=confirmar&id=${id}`)
-    .then((response) => response.text())
+    .then((response) => response.json())
     .then((result) => {
-      alert("Evento confirmado correctamente");
-      cargarEventos();
+      if (result.success) {
+        alert(result.message);
+        cargarEventos(); // Recargar la lista de eventos
+      } else {
+        throw new Error(result.message);
+      }
     })
     .catch((error) => {
       console.error("Error:", error);
