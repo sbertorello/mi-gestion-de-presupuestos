@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbxK9AeNgjZml5szfRhpQ1jC-OCZx6WqQ7dZKbCzN7FejnlQRsYit4rMyd5T9c-WeRjT/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxtF-PyqeFnv8Qy1-sKPMj30H94m6lyQL4Zi9N7GUYljBk1qpJFnyTVAkdWR-TN9lAolQ/exec"; // Reemplaza con tu URL
 
 document.addEventListener("DOMContentLoaded", function () {
   cargarEventos();
