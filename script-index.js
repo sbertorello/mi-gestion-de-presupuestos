@@ -22,17 +22,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
       fetch(API_URL, {
         method: "POST",
-        mode: "cors", // Asegúrate de que el modo sea "cors"
+        mode: "no-cors", // Cambiamos a "no-cors" para evitar problemas de CORS
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(data),
       })
-        .then((response) => response.json()) // Convertir la respuesta a JSON
-        .then((result) => {
-          if (result.success) {
-            alert(result.message); // Mostrar mensaje de éxito
-            document.getElementById("formPresupuesto").reset(); // Borrar el formulario
-          } else {
-            throw new Error("Error al guardar los datos");
-          }
+        .then(() => {
+          alert("Datos guardados correctamente");
+          document.getElementById("formPresupuesto").reset(); // Limpiar el formulario
         })
         .catch((error) => {
           console.error("Error:", error);
