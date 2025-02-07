@@ -32,8 +32,7 @@ function cargarEventos() {
 
           eventoDiv.querySelector("h3").addEventListener("click", function () {
             const detalles = eventoDiv.querySelector(".detalles");
-            detalles.style.display =
-              detalles.style.display === "none" ? "block" : "none";
+            detalles.style.display = detalles.style.display === "none" ? "block" : "none";
           });
 
           listaEventos.appendChild(eventoDiv);
