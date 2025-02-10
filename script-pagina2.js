@@ -36,7 +36,7 @@ function mostrarEventos(eventos) {
 
 async function confirmarEvento(index) {
     try {
-        const response = await fetch(`${API_URL}?action=confirmar&index=${index}`, {
+        const response = await fetch(API_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -57,7 +57,7 @@ async function confirmarEvento(index) {
 
 async function eliminarEvento(index) {
     try {
-        const response = await fetch(`${API_URL}?action=eliminar&index=${index}`, {
+        const response = await fetch(API_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
