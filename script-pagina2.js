@@ -1,76 +1,65 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbxtF-PyqeFnv8Qy1-sKPMj30H94m6lyQL4Zi9N7GUYljBk1qpJFnyTVAkdWR-TN9lAolQ/exec"; // Reemplaza con tu URL
+const API_URL = "https://script.google.com/macros/s/AKfycbxtF-PyqeFnv8Qy1-sKPMj30H94m6lyQL4Zi9N7GUYljBk1qpJFnyTVAkdWR-TN9lAolQ/exec";
 
-document.addEventListener("DOMContentLoaded", () => {
-  cargarEventos();
+document.addEventListener('DOMContentLoaded', () => {
+    cargarEventos();
 });
 
-function cargarEventos() {
-  fetch(`${API_URL}?action=obtener`)
-    .then(response => response.json())
-    .then(data => {
-      const listaEventos = document.getElementById("listaEventos");
-      listaEventos.innerHTML = "";
+async function cargarEventos() {
+    try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        mostrarEventos(data);
+    } catch (error) {
+        console.error('Error al cargar los eventos:', error);
+    }
+}
 
-      data.forEach(evento => {
-        if (evento.estado === "Pendiente") {
-          const eventoDiv = document.createElement("div");
-          eventoDiv.className = "evento";
+function mostrarEventos(eventos) {
+    const container = document.getElementById('eventos-container');
+    container.innerHTML = ''; // Limpiar el contenedor
 
-          eventoDiv.innerHTML = `
-            <h3>${evento.nombreEvento}</h3>
-            <div class="detalles" style="display: none;">
-              <p><strong>Precio:</strong> $${evento.precio}</p>
-              <p><strong>Tipo de Evento:</strong> ${evento.tipoEvento}</p>
-              <p><strong>Cuotas:</strong> ${evento.cuotas}</p>
-              <p><strong>Fecha del Evento:</strong> ${evento.fechaEvento}</p>
-              <div class="botones">
-                <button onclick="eliminarEvento('${evento.id}')">Eliminar</button>
-                <button onclick="confirmarEvento('${evento.id}')">Confirmar</button>
-              </div>
-            </div>
-          `;
+    eventos.forEach((evento, index) => {
+        const eventoDiv = document.createElement('div');
+        eventoDiv.className = 'evento';
+        eventoDiv.innerHTML = `
+            <h2>${evento.nombreEvento}</h2>
+            <p>Precio: $${evento.precio}</p>
+            <p>Tipo de Evento: ${evento.tipoEvento}</p>
+            <p>Cuotas: ${evento.cuotas}</p>
+            <p>Fecha del Evento: ${evento.fechaEvento}</p>
+            <button onclick="confirmarEvento(${index})" class="btn-verde">Confirmar</button>
+            <button onclick="eliminarEvento(${index})" class="btn-rojo">Eliminar</button>
+        `;
+        container.appendChild(eventoDiv);
+    });
+}
 
-          eventoDiv.querySelector("h3").addEventListener("click", () => {
-            const detalles = eventoDiv.querySelector(".detalles");
-            detalles.style.display = detalles.style.display === "none" ? "block" : "none";
-          });
-
-          listaEventos.appendChild(eventoDiv);
+async function confirmarEvento(index) {
+    try {
+        const response = await fetch(`${API_URL}?action=confirmar&index=${index}`, { method: 'POST' });
+        const data = await response.json();
+        if (data.success) {
+            alert('Evento confirmado correctamente');
+            cargarEventos();
+        } else {
+            alert('Error al confirmar el evento');
         }
-      });
-    })
-    .catch(error => {
-      console.error("Error al cargar eventos:", error);
-      alert("Hubo un problema al obtener los eventos.");
-    });
+    } catch (error) {
+        console.error('Error al confirmar el evento:', error);
+    }
 }
 
-function eliminarEvento(id) {
-  if (!confirm("¿Estás seguro de eliminar este evento?")) return;
-
-  fetch(`${API_URL}?action=eliminar&id=${encodeURIComponent(id)}`)
-    .then(response => response.json())
-    .then(result => {
-      alert(result.message);
-      if (result.success) cargarEventos();
-    })
-    .catch(error => {
-      console.error("Error al eliminar evento:", error);
-      alert("No se pudo eliminar el evento.");
-    });
-}
-
-function confirmarEvento(id) {
-  if (!confirm("¿Confirmar este evento como 'En Curso'?")) return;
-
-  fetch(`${API_URL}?action=confirmar&id=${encodeURIComponent(id)}`)
-    .then(response => response.json())
-    .then(result => {
-      alert(result.message);
-      if (result.success) cargarEventos();
-    })
-    .catch(error => {
-      console.error("Error al confirmar evento:", error);
-      alert("No se pudo confirmar el evento.");
-    });
+async function eliminarEvento(index) {
+    try {
+        const response = await fetch(`${API_URL}?action=eliminar&index=${index}`, { method: 'POST' });
+        const data = await response.json();
+        if (data.success) {
+            alert('Evento eliminado correctamente');
+            cargarEventos();
+        } else {
+            alert('Error al eliminar el evento');
+        }
+    } catch (error) {
+        console.error('Error al eliminar el evento:', error);
+    }
 }
