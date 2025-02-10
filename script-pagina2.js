@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
     fetch(API_URL)
         .then(response => response.json())
         .then(data => {
-            contenedorPresupuestos.innerHTML = ""; // Limpiar contenedor
+            contenedorPresupuestos.innerHTML = ""; // Limpiar contenedor antes de cargar datos
 
             data.forEach(evento => {
                 const cajaEvento = document.createElement("div");
@@ -25,8 +25,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // Evento para desplegar detalles
                 cajaEvento.querySelector(".evento-nombre").addEventListener("click", function () {
-                    const detalles = this.nextElementSibling;
-                    detalles.classList.toggle("oculto");
+                    const detalles = cajaEvento.querySelector(".evento-detalle");
+                    detalles.classList.toggle("oculto"); // Alterna la visibilidad
                 });
 
                 // Evento para confirmar
