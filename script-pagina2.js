@@ -1,77 +1,70 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbxtF-PyqeFnv8Qy1-sKPMj30H94m6lyQL4Zi9N7GUYljBk1qpJFnyTVAkdWR-TN9lAolQ/exec";
 
-document.addEventListener('DOMContentLoaded', () => {
-    cargarEventos();
+document.addEventListener("DOMContentLoaded", () => {
+    cargarPresupuestos();
 });
 
-async function cargarEventos() {
-    try {
-        const response = await fetch(API_URL);
-        const data = await response.json();
-        mostrarEventos(data);
-    } catch (error) {
-        console.error('Error al cargar los eventos:', error);
-    }
+function cargarPresupuestos() {
+    fetch(API_URL + "?action=getPresupuestos")
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                mostrarPresupuestos(data.presupuestos);
+            }
+        })
+        .catch(error => console.error("Error cargando presupuestos:", error));
 }
 
-function mostrarEventos(eventos) {
-    const container = document.getElementById('eventos-container');
-    container.innerHTML = ''; // Limpiar el contenedor
+function mostrarPresupuestos(presupuestos) {
+    const container = document.getElementById("presupuestos-container");
+    container.innerHTML = "";
 
-    eventos.forEach((evento, index) => {
-        const eventoDiv = document.createElement('div');
-        eventoDiv.className = 'evento';
-        eventoDiv.innerHTML = `
-            <h2>${evento.nombreEvento}</h2>
-            <p>Precio: $${evento.precio}</p>
-            <p>Tipo de Evento: ${evento.tipoEvento}</p>
-            <p>Cuotas: ${evento.cuotas}</p>
-            <p>Fecha del Evento: ${evento.fechaEvento}</p>
-            <button onclick="confirmarEvento(${index})" class="btn-verde">Confirmar</button>
-            <button onclick="eliminarEvento(${index})" class="btn-rojo">Eliminar</button>
+    presupuestos.forEach(presupuesto => {
+        const div = document.createElement("div");
+        div.classList.add("presupuesto-item");
+
+        div.innerHTML = `
+            <p><strong>${presupuesto.nombreEvento}</strong></p>
+            <p>Precio: ${presupuesto.precio}</p>
+            <p>Tipo: ${presupuesto.tipoEvento}</p>
+            <p>Cuotas: ${presupuesto.cuotas}</p>
+            <p>Fecha: ${presupuesto.fechaEvento}</p>
+            <button class="confirmar" onclick="confirmarPresupuesto('${presupuesto.id}')">Confirmar</button>
+            <button class="eliminar" onclick="eliminarPresupuesto('${presupuesto.id}')">Eliminar</button>
         `;
-        container.appendChild(eventoDiv);
+
+        container.appendChild(div);
     });
 }
 
-async function confirmarEvento(index) {
-    try {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ action: 'confirmar', index: index })
-        });
-        const data = await response.json();
+function confirmarPresupuesto(id) {
+    fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "confirmarPresupuesto", id }),
+        headers: { "Content-Type": "application/json" }
+    })
+    .then(response => response.json())
+    .then(data => {
         if (data.success) {
-            alert('Evento confirmado correctamente');
-            cargarEventos();
-        } else {
-            alert('Error al confirmar el evento');
+            alert("Presupuesto confirmado");
+            cargarPresupuestos();
         }
-    } catch (error) {
-        console.error('Error al confirmar el evento:', error);
-    }
+    })
+    .catch(error => console.error("Error confirmando presupuesto:", error));
 }
 
-async function eliminarEvento(index) {
-    try {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ action: 'eliminar', index: index })
-        });
-        const data = await response.json();
+function eliminarPresupuesto(id) {
+    fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "eliminarPresupuesto", id }),
+        headers: { "Content-Type": "application/json" }
+    })
+    .then(response => response.json())
+    .then(data => {
         if (data.success) {
-            alert('Evento eliminado correctamente');
-            cargarEventos();
-        } else {
-            alert('Error al eliminar el evento');
+            alert("Presupuesto eliminado");
+            cargarPresupuestos();
         }
-    } catch (error) {
-        console.error('Error al eliminar el evento:', error);
-    }
+    })
+    .catch(error => console.error("Error eliminando presupuesto:", error));
 }
