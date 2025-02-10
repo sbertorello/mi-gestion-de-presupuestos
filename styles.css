@@ -103,3 +103,46 @@ button.confirmar {
 button.confirmar:hover {
   background-color: #218838;
 }
+
+.caja-evento {
+    background-color: #f0f0f0;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.evento-nombre {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.evento-detalle {
+    display: none;
+    margin-top: 10px;
+}
+
+.evento-detalle p {
+    margin: 5px 0;
+}
+
+.oculto {
+    display: none;
+}
+
+.btn-confirmar {
+    background-color: green;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-eliminar {
+    background-color: red;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    cursor: pointer;
+}
+
