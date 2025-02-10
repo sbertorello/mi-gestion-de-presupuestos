@@ -1,58 +1,61 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const API_URL = "https://script.google.com/macros/s/AKfycbxtF-PyqeFnv8Qy1-sKPMj30H94m6lyQL4Zi9N7GUYljBk1qpJFnyTVAkdWR-TN9lAolQ/exec";
-    const contenedorPresupuestos = document.getElementById("contenedorPresupuestos");
+    cargarPresupuestos();
+});
 
-    // Obtener los datos de la hoja de cálculo
-    fetch(API_URL)
+function cargarPresupuestos() {
+    fetch("https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec")
         .then(response => response.json())
         .then(data => {
-            contenedorPresupuestos.innerHTML = ""; // Limpiar contenedor antes de cargar datos
+            if (!data || data.length === 0) {
+                console.warn("No hay presupuestos guardados.");
+                return;
+            }
 
-            data.forEach(evento => {
-                const cajaEvento = document.createElement("div");
-                cajaEvento.classList.add("caja-evento");
-                cajaEvento.innerHTML = `
-                    <h2 class="evento-nombre">${evento.nombreEvento}</h2>
-                    <div class="evento-detalle oculto">
-                        <p><strong>Precio:</strong> $${evento.precio}</p>
-                        <p><strong>Tipo de Evento:</strong> ${evento.tipoEvento}</p>
-                        <p><strong>Cuotas:</strong> ${evento.cuotas}</p>
-                        <p><strong>Fecha del Evento:</strong> ${evento.fechaEvento}</p>
-                        <button class="btn-confirmar">Confirmar</button>
-                        <button class="btn-eliminar">Eliminar</button>
+            let contenedor = document.getElementById("lista-presupuestos");
+            contenedor.innerHTML = ""; // Limpiar contenido previo
+
+            data.forEach(presupuesto => {
+                let divEvento = document.createElement("div");
+                divEvento.classList.add("caja-evento");
+
+                let nombreEvento = document.createElement("div");
+                nombreEvento.classList.add("evento-nombre");
+                nombreEvento.textContent = presupuesto.nombre;
+
+                let detallesEvento = document.createElement("div");
+                detallesEvento.classList.add("evento-detalle", "oculto");
+
+                // Agregamos detalles del evento
+                detallesEvento.innerHTML = `
+                    <p><strong>Fecha:</strong> ${presupuesto.fecha}</p>
+                    <p><strong>Monto:</strong> $${presupuesto.monto}</p>
+                    <div class="botones">
+                        <button class="btn-confirmar" onclick="confirmarPresupuesto('${presupuesto.id}')">Confirmar</button>
+                        <button class="btn-eliminar" onclick="eliminarPresupuesto('${presupuesto.id}')">Eliminar</button>
                     </div>
                 `;
 
-                // Evento para desplegar detalles
-                cajaEvento.querySelector(".evento-nombre").addEventListener("click", function () {
-                    const detalles = cajaEvento.querySelector(".evento-detalle");
-                    detalles.classList.toggle("oculto"); // Alterna la visibilidad
+                // Agregar evento para desplegar detalles
+                nombreEvento.addEventListener("click", function () {
+                    detallesEvento.classList.toggle("oculto");
                 });
 
-                // Evento para confirmar
-                cajaEvento.querySelector(".btn-confirmar").addEventListener("click", function () {
-                    fetch(API_URL, {
-                        method: "PUT",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ nombreEvento: evento.nombreEvento })
-                    })
-                    .then(response => response.json())
-                    .then(() => location.reload());
-                });
-
-                // Evento para eliminar
-                cajaEvento.querySelector(".btn-eliminar").addEventListener("click", function () {
-                    fetch(API_URL, {
-                        method: "DELETE",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ nombreEvento: evento.nombreEvento })
-                    })
-                    .then(response => response.json())
-                    .then(() => location.reload());
-                });
-
-                contenedorPresupuestos.appendChild(cajaEvento);
+                divEvento.appendChild(nombreEvento);
+                divEvento.appendChild(detallesEvento);
+                contenedor.appendChild(divEvento);
             });
         })
-        .catch(error => console.error("Error al obtener los presupuestos:", error));
-});
+        .catch(error => console.error("Error al cargar presupuestos:", error));
+}
+
+function confirmarPresupuesto(id) {
+    alert(`Presupuesto ${id} confirmado.`);
+    // Aquí podrías hacer un fetch para actualizar el estado en la base de datos
+}
+
+function eliminarPresupuesto(id) {
+    if (confirm("¿Estás seguro de eliminar este presupuesto?")) {
+        alert(`Presupuesto ${id} eliminado.`);
+        // Aquí podrías hacer un fetch para eliminarlo de la base de datos
+    }
+}
