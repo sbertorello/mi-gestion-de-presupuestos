@@ -29,16 +29,16 @@ function cargarPresupuestos() {
                 const eventoDiv = document.createElement("div");
                 eventoDiv.classList.add("presupuesto-box");
                 eventoDiv.innerHTML = `
-                    <div class="evento-nombre" onclick="toggleDetalles('${evento.id}')">
+                    <div class="evento-nombre" onclick="toggleDetalles('${evento.timestamp}')">
                         ${evento.nombreEvento}
                     </div>
-                    <div id="detalles-${evento.id}" class="evento-detalle">
+                    <div id="detalles-${evento.timestamp}" class="evento-detalle">
                         <p><strong>Precio:</strong> $${evento.precio}</p>
                         <p><strong>Tipo:</strong> ${evento.tipoEvento}</p>
                         <p><strong>Cuotas:</strong> ${evento.cuotas}</p>
                         <p><strong>Fecha:</strong> ${evento.fechaEvento}</p>
-                        <button class="btn-confirmar" onclick="confirmarPresupuesto('${evento.id}')">Confirmar</button>
-                        <button class="btn-eliminar" onclick="eliminarPresupuesto('${evento.id}')">Eliminar</button>
+                        <button class="btn-confirmar" onclick="confirmarPresupuesto('${evento.timestamp}')">Confirmar</button>
+                        <button class="btn-eliminar" onclick="eliminarPresupuesto('${evento.timestamp}')">Eliminar</button>
                     </div>
                 `;
                 container.appendChild(eventoDiv);
@@ -60,10 +60,10 @@ function toggleDetalles(id) {
     }
 }
 
-function confirmarPresupuesto(id) {
+function confirmarPresupuesto(timestamp) {
     const formData = new URLSearchParams();
     formData.append('action', 'confirmarPresupuesto');
-    formData.append('id', id);
+    formData.append('timestamp', timestamp);
 
     fetch(API_URL, {
         method: "POST",
@@ -75,7 +75,7 @@ function confirmarPresupuesto(id) {
     })
     .then(() => {
         alert("Presupuesto confirmado exitosamente");
-        cargarPresupuestos();
+        setTimeout(cargarPresupuestos, 1000);
     })
     .catch(error => {
         console.error("Error al confirmar:", error);
@@ -83,11 +83,11 @@ function confirmarPresupuesto(id) {
     });
 }
 
-function eliminarPresupuesto(id) {
+function eliminarPresupuesto(timestamp) {
     if (confirm("¿Estás seguro de eliminar este presupuesto?")) {
         const formData = new URLSearchParams();
         formData.append('action', 'eliminarPresupuesto');
-        formData.append('id', id);
+        formData.append('timestamp', timestamp);
 
         fetch(API_URL, {
             method: "POST",
@@ -99,7 +99,7 @@ function eliminarPresupuesto(id) {
         })
         .then(() => {
             alert("Presupuesto eliminado exitosamente");
-            cargarPresupuestos();
+            setTimeout(cargarPresupuestos, 1000);
         })
         .catch(error => {
             console.error("Error al eliminar:", error);
