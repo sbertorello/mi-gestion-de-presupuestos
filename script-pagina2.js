@@ -33,9 +33,11 @@ function cargarPresupuestos() {
                 const eventoDiv = document.createElement("div");
                 eventoDiv.classList.add("presupuesto-box");
                 eventoDiv.innerHTML = `
-                    <h3 class="presupuesto-titulo" onclick="toggleDetalles('${evento.id}')">${evento.nombreEvento}</h3>
-                    <div id="detalles-${evento.id}" class="detalles" style="display: none;">
-                        <p><strong>Precio:</strong> ${evento.precio}</p>
+                    <div class="evento-nombre" onclick="toggleDetalles('${evento.id}')">
+                        ${evento.nombreEvento}
+                    </div>
+                    <div id="detalles-${evento.id}" class="evento-detalle">
+                        <p><strong>Precio:</strong> $${evento.precio}</p>
                         <p><strong>Tipo:</strong> ${evento.tipoEvento}</p>
                         <p><strong>Cuotas:</strong> ${evento.cuotas}</p>
                         <p><strong>Fecha:</strong> ${evento.fechaEvento}</p>
@@ -54,7 +56,7 @@ function cargarPresupuestos() {
 function toggleDetalles(id) {
     const detalles = document.getElementById(`detalles-${id}`);
     if (detalles) {
-        detalles.style.display = detalles.style.display === "none" ? "block" : "none";
+        detalles.classList.toggle("mostrar");
     }
 }
 
