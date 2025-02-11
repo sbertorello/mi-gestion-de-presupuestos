@@ -6,8 +6,13 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 function cargarPresupuestos() {
-    fetch(`${API_URL}?action=getPresupuestos`)
-        .then(response => response.json())
+    fetch(`${API_URL}?action=getPresupuestos`, { mode: 'cors' })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             console.log("Datos recibidos:", data);
 
@@ -56,8 +61,9 @@ function toggleDetalles(id) {
 function confirmarPresupuesto(id) {
     fetch(`${API_URL}`, {
         method: "POST",
-        body: JSON.stringify({ action: "confirmarPresupuesto", id: id }),
-        headers: { "Content-Type": "application/json" }
+        mode: 'cors',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "confirmarPresupuesto", id: id })
     })
     .then(response => response.json())
     .then(data => {
@@ -73,8 +79,9 @@ function eliminarPresupuesto(id) {
     if (confirm("¿Estás seguro de eliminar este presupuesto?")) {
         fetch(`${API_URL}`, {
             method: "POST",
-            body: JSON.stringify({ action: "eliminarPresupuesto", id: id }),
-            headers: { "Content-Type": "application/json" }
+            mode: 'cors',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "eliminarPresupuesto", id: id })
         })
         .then(response => response.json())
         .then(data => {
