@@ -33,14 +33,14 @@ function cargarPresupuestos() {
                 const eventoDiv = document.createElement("div");
                 eventoDiv.classList.add("presupuesto-box");
                 eventoDiv.innerHTML = `
-                    <h3 onclick="toggleDetalles(${evento.id})">${evento.nombreEvento}</h3>
+                    <h3 class="presupuesto-titulo" onclick="toggleDetalles('${evento.id}')">${evento.nombreEvento}</h3>
                     <div id="detalles-${evento.id}" class="detalles" style="display: none;">
                         <p><strong>Precio:</strong> ${evento.precio}</p>
                         <p><strong>Tipo:</strong> ${evento.tipoEvento}</p>
                         <p><strong>Cuotas:</strong> ${evento.cuotas}</p>
                         <p><strong>Fecha:</strong> ${evento.fechaEvento}</p>
-                        <button class="btn-confirmar" onclick="confirmarPresupuesto(${evento.id})">Confirmar</button>
-                        <button class="btn-eliminar" onclick="eliminarPresupuesto(${evento.id})">Eliminar</button>
+                        <button class="btn-confirmar" onclick="confirmarPresupuesto('${evento.id}')">Confirmar</button>
+                        <button class="btn-eliminar" onclick="eliminarPresupuesto('${evento.id}')">Eliminar</button>
                     </div>
                 `;
                 container.appendChild(eventoDiv);
