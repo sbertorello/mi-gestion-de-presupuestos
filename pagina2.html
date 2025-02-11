@@ -3,13 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presupuestos Enviados</title>
+    <title>Gestión de Presupuestos</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Presupuestos Enviados</h1>
-    <div id="contenedorPresupuestos"></div>
 
-    <script src="script-pagina2.js"></script>
+    <h1>Gestión de Presupuestos</h1>
+
+    <form id="presupuestoForm">
+        <label>Nombre del Evento:</label>
+        <input type="text" id="nombreEvento" required>
+
+        <label>Precio:</label>
+        <input type="number" id="precio" required>
+
+        <label>Tipo de Evento:</label>
+        <select id="tipoEvento">
+            <option value="Fiesta">Fiesta</option>
+            <option value="Corporativo">Corporativo</option>
+            <option value="Otro">Otro</option>
+        </select>
+
+        <label>Cuotas:</label>
+        <input type="number" id="cuotas" min="1" required>
+
+        <label>Fecha del Evento:</label>
+        <input type="date" id="fechaEvento" required>
+
+        <button type="submit">Guardar Presupuesto</button>
+    </form>
+
+    <h2>Presupuestos Guardados</h2>
+    <ul id="listaPresupuestos"></ul>
+
+    <script src="script.js"></script>
+
 </body>
 </html>
