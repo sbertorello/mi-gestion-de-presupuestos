@@ -6,29 +6,30 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 function cargarPresupuestos() {
-    fetch(`${API_URL}?action=getPresupuestos`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+    fetch(`${API_URL}?action=getPresupuestos`, {
+        method: 'GET',
+        mode: 'no-cors'
+    })
+        .then(response => response.text())
+        .then(text => {
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                return [];
             }
-            return response.json();
         })
         .then(data => {
             console.log("Datos recibidos:", data);
-
             const container = document.getElementById("presupuestos-container");
             if (!container) {
                 console.error("No se encontró el contenedor de presupuestos.");
                 return;
             }
-
             container.innerHTML = "";
-
-            if (data.length === 0) {
+            if (!data || data.length === 0) {
                 container.innerHTML = "<p>No hay presupuestos disponibles.</p>";
                 return;
             }
-
             data.forEach(evento => {
                 const eventoDiv = document.createElement("div");
                 eventoDiv.classList.add("presupuesto-box");
@@ -61,34 +62,36 @@ function toggleDetalles(id) {
 }
 
 function confirmarPresupuesto(id) {
+    const formData = new FormData();
+    formData.append('action', 'confirmarPresupuesto');
+    formData.append('id', id);
+
     fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "confirmarPresupuesto", id: id })
+        mode: 'no-cors',
+        body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert("Presupuesto confirmado");
-            cargarPresupuestos();
-        }
+    .then(() => {
+        alert("Presupuesto confirmado");
+        cargarPresupuestos();
     })
     .catch(error => console.error("Error al confirmar:", error));
 }
 
 function eliminarPresupuesto(id) {
     if (confirm("¿Estás seguro de eliminar este presupuesto?")) {
+        const formData = new FormData();
+        formData.append('action', 'eliminarPresupuesto');
+        formData.append('id', id);
+
         fetch(API_URL, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "eliminarPresupuesto", id: id })
+            mode: 'no-cors',
+            body: formData
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert("Presupuesto eliminado");
-                cargarPresupuestos();
-            }
+        .then(() => {
+            alert("Presupuesto eliminado");
+            cargarPresupuestos();
         })
         .catch(error => console.error("Error al eliminar:", error));
     }
