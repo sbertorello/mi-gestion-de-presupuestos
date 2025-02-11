@@ -1,6 +1,7 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbxtF-PyqeFnv8Qy1-sKPMj30H94m6lyQL4Zi9N7GUYljBk1qpJFnyTVAkdWR-TN9lAolQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec";
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function() {
+    console.log("Página cargada. Cargando presupuestos...");
     cargarPresupuestos();
 });
 
@@ -8,8 +9,20 @@ function cargarPresupuestos() {
     fetch(`${API_URL}?action=getPresupuestos`)
         .then(response => response.json())
         .then(data => {
+            console.log("Datos recibidos:", data);
+
             const container = document.getElementById("presupuestos-container");
+            if (!container) {
+                console.error("No se encontró el contenedor de presupuestos.");
+                return;
+            }
+
             container.innerHTML = "";
+
+            if (data.length === 0) {
+                container.innerHTML = "<p>No hay presupuestos disponibles.</p>";
+                return;
+            }
 
             data.forEach(evento => {
                 const eventoDiv = document.createElement("div");
@@ -28,36 +41,48 @@ function cargarPresupuestos() {
                 container.appendChild(eventoDiv);
             });
         })
-        .catch(error => console.error("Error al cargar los presupuestos:", error));
+        .catch(error => {
+            console.error("Error al cargar los presupuestos:", error);
+        });
 }
 
 function toggleDetalles(id) {
     const detalles = document.getElementById(`detalles-${id}`);
-    detalles.style.display = detalles.style.display === "none" ? "block" : "none";
+    if (detalles) {
+        detalles.style.display = detalles.style.display === "none" ? "block" : "none";
+    }
 }
 
 function confirmarPresupuesto(id) {
-    fetch(`${API_URL}?action=confirmarPresupuesto&id=${id}`, { method: "POST" })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert("Presupuesto confirmado");
-                cargarPresupuestos();
-            }
-        })
-        .catch(error => console.error("Error al confirmar:", error));
+    fetch(`${API_URL}`, {
+        method: "POST",
+        body: JSON.stringify({ action: "confirmarPresupuesto", id: id }),
+        headers: { "Content-Type": "application/json" }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("Presupuesto confirmado");
+            cargarPresupuestos();
+        }
+    })
+    .catch(error => console.error("Error al confirmar:", error));
 }
 
 function eliminarPresupuesto(id) {
     if (confirm("¿Estás seguro de eliminar este presupuesto?")) {
-        fetch(`${API_URL}?action=eliminarPresupuesto&id=${id}`, { method: "POST" })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert("Presupuesto eliminado");
-                    cargarPresupuestos();
-                }
-            })
-            .catch(error => console.error("Error al eliminar:", error));
+        fetch(`${API_URL}`, {
+            method: "POST",
+            body: JSON.stringify({ action: "eliminarPresupuesto", id: id }),
+            headers: { "Content-Type": "application/json" }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Presupuesto eliminado");
+                cargarPresupuestos();
+            }
+        })
+        .catch(error => console.error("Error al eliminar:", error));
     }
 }
