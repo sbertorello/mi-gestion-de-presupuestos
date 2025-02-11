@@ -61,21 +61,21 @@ function toggleDetalles(id) {
 }
 
 function confirmarPresupuesto(id) {
+    const formData = new URLSearchParams();
+    formData.append('action', 'confirmarPresupuesto');
+    formData.append('id', id);
+
     fetch(API_URL, {
         method: "POST",
+        mode: 'no-cors',
         headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
+            'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: `action=confirmarPresupuesto&id=${id}`
+        body: formData.toString()
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert("Presupuesto confirmado exitosamente");
-            cargarPresupuestos();
-        } else {
-            throw new Error(data.error || "Error al confirmar el presupuesto");
-        }
+    .then(() => {
+        alert("Presupuesto confirmado exitosamente");
+        cargarPresupuestos();
     })
     .catch(error => {
         console.error("Error al confirmar:", error);
@@ -85,21 +85,21 @@ function confirmarPresupuesto(id) {
 
 function eliminarPresupuesto(id) {
     if (confirm("¿Estás seguro de eliminar este presupuesto?")) {
+        const formData = new URLSearchParams();
+        formData.append('action', 'eliminarPresupuesto');
+        formData.append('id', id);
+
         fetch(API_URL, {
             method: "POST",
+            mode: 'no-cors',
             headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
+                'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: `action=eliminarPresupuesto&id=${id}`
+            body: formData.toString()
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert("Presupuesto eliminado exitosamente");
-                cargarPresupuestos();
-            } else {
-                throw new Error(data.error || "Error al eliminar el presupuesto");
-            }
+        .then(() => {
+            alert("Presupuesto eliminado exitosamente");
+            cargarPresupuestos();
         })
         .catch(error => {
             console.error("Error al eliminar:", error);
