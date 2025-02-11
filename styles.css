@@ -178,3 +178,79 @@ button.confirmar:hover {
 .btn-eliminar:hover {
   background-color: darkred;
 }
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#presupuestos-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.presupuesto-box {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.presupuesto-box:hover {
+    background-color: #f9f9f9;
+}
+
+.evento-nombre {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.evento-detalle {
+    visibility: hidden;
+    height: 0;
+    overflow: hidden;
+    transition: height 0.3s ease, visibility 0.3s ease;
+}
+
+.evento-detalle.mostrar {
+    visibility: visible;
+    height: auto;
+    margin-top: 10px;
+}
+
+.btn-confirmar, .btn-eliminar {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-right: 5px;
+}
+
+.btn-confirmar {
+    background-color: green;
+    color: white;
+}
+
+.btn-confirmar:hover {
+    background-color: darkgreen;
+}
+
+.btn-eliminar {
+    background-color: red;
+    color: white;
+}
+
+.btn-eliminar:hover {
+    background-color: darkred;
+}
