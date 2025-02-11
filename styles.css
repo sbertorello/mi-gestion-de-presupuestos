@@ -1,189 +1,9 @@
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f4f4f4;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-.container {
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  width: 400px;
-}
-
-h1 {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-label {
-  display: block;
-  margin-bottom: 5px;
-}
-
-input,
-select {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-button {
-  width: 100%;
-  padding: 10px;
-  background-color: #28a745;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-bottom: 10px;
-}
-
-button:hover {
-  background-color: #218838;
-}
-
-a {
-  display: block;
-  text-align: center;
-  margin-top: 10px;
-  color: #007bff;
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-.evento {
-  border: 1px solid #ccc;
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 4px;
-  background-color: #f9f9f9;
-}
-
-.evento h3 {
-  margin: 0;
-  cursor: pointer;
-}
-
-.evento p {
-  margin: 5px 0;
-}
-
-.botones {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
-}
-
-button.eliminar {
-  background-color: #dc3545;
-  color: #fff;
-}
-
-button.eliminar:hover {
-  background-color: #c82333;
-}
-
-button.confirmar {
-  background-color: #28a745;
-  color: #fff;
-}
-
-button.confirmar:hover {
-  background-color: #218838;
-}
-
-/* ------------------------------- */
-/* Corrección del diseño de eventos */
-/* ------------------------------- */
-
-.caja-evento {
-  background-color: #f0f0f0;
-  padding: 15px;
-  margin-bottom: 10px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.caja-evento:hover {
-  background-color: #e0e0e0;
-}
-
-.evento-nombre {
-  font-size: 18px;
-  font-weight: bold;
-}
-
-/* ---------------------------- */
-/* Nueva forma de ocultar detalles */
-/* ---------------------------- */
-
-.evento-detalle {
-  visibility: hidden;
-  height: 0;
-  overflow: hidden;
-  transition: height 0.3s ease, visibility 0.3s ease;
-}
-
-.evento-detalle p {
-  margin: 5px 0;
-}
-
-/* Cuando se muestra, cambiamos las propiedades */
-.evento-detalle.mostrar {
-  visibility: visible;
-  height: auto;
-}
-
-/* ---------------------- */
-/* Diseño de los botones */
-/* ---------------------- */
-
-.evento-detalle button {
-  width: auto;
-  padding: 8px 12px;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  margin-right: 5px;
-  border-radius: 4px;
-}
-
-.btn-confirmar {
-  background-color: green;
-  color: white;
-}
-
-.btn-confirmar:hover {
-  background-color: darkgreen;
-}
-
-.btn-eliminar {
-  background-color: red;
-  color: white;
-}
-
-.btn-eliminar:hover {
-  background-color: darkred;
-}
-
+/* Estilos generales */
 body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
     margin: 0;
-    padding: 20px;
+    padding: 0;
 }
 
 h1 {
@@ -191,9 +11,62 @@ h1 {
     margin-bottom: 20px;
 }
 
+/* Estilos para la página 1 (Index.html) */
+.container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    margin: 0 auto;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+input,
+select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+button:hover {
+    background-color: #218838;
+}
+
+a {
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+    color: #007bff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Estilos para la página 2 (pagina2.html) */
 #presupuestos-container {
     max-width: 600px;
     margin: 0 auto;
+    padding: 20px;
 }
 
 .presupuesto-box {
