@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 function cargarPresupuestos() {
-    fetch(`${API_URL}?action=getPresupuestos`, { mode: 'no-cors' })
+    fetch(`${API_URL}?action=getPresupuestos`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -59,9 +59,8 @@ function toggleDetalles(id) {
 }
 
 function confirmarPresupuesto(id) {
-    fetch(`${API_URL}`, {
+    fetch(API_URL, {
         method: "POST",
-        mode: 'no-cors',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "confirmarPresupuesto", id: id })
     })
@@ -77,9 +76,8 @@ function confirmarPresupuesto(id) {
 
 function eliminarPresupuesto(id) {
     if (confirm("¿Estás seguro de eliminar este presupuesto?")) {
-        fetch(`${API_URL}`, {
+        fetch(API_URL, {
             method: "POST",
-            mode: 'no-cors',
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ action: "eliminarPresupuesto", id: id })
         })
