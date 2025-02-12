@@ -6,37 +6,47 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 function cargarPresupuestos() {
-    fetch(`${API_URL}?action=getPresupuestos`)
-        .then(response => response.json())
-        .then(data => {
-            console.log("Datos recibidos:", data);
-            const container = document.getElementById("presupuestos-container");
+    fetch(`${API_URL}?action=getPresupuestos`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Error en la solicitud: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log("Datos recibidos:", data);
+        const container = document.getElementById("presupuestos-container");
 
-            if (!container) {
-                console.error("No se encontró el contenedor de presupuestos.");
-                return;
-            }
+        if (!container) {
+            console.error("No se encontró el contenedor de presupuestos.");
+            return;
+        }
 
-            container.innerHTML = data.length === 0 ? "<p>No hay presupuestos disponibles.</p>" : "";
+        container.innerHTML = data.length === 0 ? "<p>No hay presupuestos disponibles.</p>" : "";
 
-            data.forEach(evento => {
-                const eventoDiv = document.createElement("div");
-                eventoDiv.classList.add("presupuesto-box");
-                eventoDiv.innerHTML = `
-                    <h3 onclick="toggleDetalles('${evento.id}')">${evento.nombreEvento}</h3>
-                    <div id="detalles-${evento.id}" class="detalles" style="display: none;">
-                        <p><strong>Precio:</strong> ${evento.precio}</p>
-                        <p><strong>Tipo:</strong> ${evento.tipoEvento}</p>
-                        <p><strong>Cuotas:</strong> ${evento.cuotas}</p>
-                        <p><strong>Fecha:</strong> ${evento.fechaEvento}</p>
-                        <button class="btn-confirmar" onclick="confirmarPresupuesto('${evento.id}')">Confirmar</button>
-                        <button class="btn-eliminar" onclick="eliminarPresupuesto('${evento.id}')">Eliminar</button>
-                    </div>
-                `;
-                container.appendChild(eventoDiv);
-            });
-        })
-        .catch(error => console.error("Error al cargar los presupuestos:", error));
+        data.forEach(evento => {
+            const eventoDiv = document.createElement("div");
+            eventoDiv.classList.add("presupuesto-box");
+            eventoDiv.innerHTML = `
+                <h3 onclick="toggleDetalles('${evento.id}')">${evento.nombreEvento}</h3>
+                <div id="detalles-${evento.id}" class="detalles" style="display: none;">
+                    <p><strong>Precio:</strong> ${evento.precio}</p>
+                    <p><strong>Tipo:</strong> ${evento.tipoEvento}</p>
+                    <p><strong>Cuotas:</strong> ${evento.cuotas}</p>
+                    <p><strong>Fecha:</strong> ${evento.fechaEvento}</p>
+                    <button class="btn-confirmar" onclick="confirmarPresupuesto('${evento.id}')">Confirmar</button>
+                    <button class="btn-eliminar" onclick="eliminarPresupuesto('${evento.id}')">Eliminar</button>
+                </div>
+            `;
+            container.appendChild(eventoDiv);
+        });
+    })
+    .catch(error => console.error("Error al cargar los presupuestos:", error));
 }
 
 function toggleDetalles(id) {
@@ -61,10 +71,20 @@ function eliminarPresupuesto(id) {
 function actualizarEstado(id, action) {
     fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json"
+        },
         body: JSON.stringify({ action, id })
     })
-    .then(response => response.json())
-    .then(() => cargarPresupuestos()) // Recarga la página después de la acción
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Error en la solicitud: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(() => {
+        console.log(`Presupuesto ${id} ${action === "confirmarPresupuesto" ? "confirmado" : "rechazado"}`);
+        cargarPresupuestos();
+    })
     .catch(error => console.error(`Error al ${action}:`, error));
 }
