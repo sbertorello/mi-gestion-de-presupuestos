@@ -15,30 +15,34 @@ function cargarPresupuestos() {
         })
         .then(data => {
             console.log("Datos recibidos:", data);
+
             const container = document.getElementById("presupuestos-container");
             if (!container) {
                 console.error("No se encontró el contenedor de presupuestos.");
                 return;
             }
+
             container.innerHTML = "";
-            if (!data || data.length === 0) {
+
+            if (data.length === 0) {
                 container.innerHTML = "<p>No hay presupuestos disponibles.</p>";
                 return;
             }
+
             data.forEach(evento => {
                 const eventoDiv = document.createElement("div");
                 eventoDiv.classList.add("presupuesto-box");
                 eventoDiv.innerHTML = `
-                    <div class="evento-nombre" onclick="toggleDetalles('${evento.rowIndex}')">
+                    <div class="evento-nombre" onclick="toggleDetalles('${evento.id}')">
                         ${evento.nombreEvento}
                     </div>
-                    <div id="detalles-${evento.rowIndex}" class="evento-detalle">
+                    <div id="detalles-${evento.id}" class="evento-detalle">
                         <p><strong>Precio:</strong> $${evento.precio}</p>
                         <p><strong>Tipo:</strong> ${evento.tipoEvento}</p>
                         <p><strong>Cuotas:</strong> ${evento.cuotas}</p>
                         <p><strong>Fecha:</strong> ${evento.fechaEvento}</p>
-                        <button class="btn-confirmar" onclick="confirmarPresupuesto(${evento.rowIndex})">Confirmar</button>
-                        <button class="btn-eliminar" onclick="eliminarPresupuesto(${evento.rowIndex})">Eliminar</button>
+                        <button class="btn-confirmar" onclick="confirmarPresupuesto('${evento.id}')">Confirmar</button>
+                        <button class="btn-eliminar" onclick="eliminarPresupuesto('${evento.id}')">Rechazar</button>
                     </div>
                 `;
                 container.appendChild(eventoDiv);
@@ -46,10 +50,6 @@ function cargarPresupuestos() {
         })
         .catch(error => {
             console.error("Error al cargar los presupuestos:", error);
-            const container = document.getElementById("presupuestos-container");
-            if (container) {
-                container.innerHTML = "<p>Error al cargar los presupuestos. Por favor, intente más tarde.</p>";
-            }
         });
 }
 
@@ -60,34 +60,36 @@ function toggleDetalles(id) {
     }
 }
 
-function confirmarPresupuesto(rowIndex) {
-    fetch(`${API_URL}?action=confirmarPresupuesto&rowIndex=${rowIndex}`, {
-        method: "POST"
+function confirmarPresupuesto(id) {
+    fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "confirmarPresupuesto", id: id })
     })
-    .then(response => response.text())
-    .then(() => {
-        alert("Presupuesto confirmado exitosamente");
-        cargarPresupuestos();
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("Presupuesto confirmado");
+            cargarPresupuestos();
+        }
     })
-    .catch(error => {
-        console.error("Error al confirmar:", error);
-        alert("Error al confirmar el presupuesto. Por favor, intente nuevamente.");
-    });
+    .catch(error => console.error("Error al confirmar:", error));
 }
 
-function eliminarPresupuesto(rowIndex) {
-    if (confirm("¿Estás seguro de eliminar este presupuesto?")) {
-        fetch(`${API_URL}?action=eliminarPresupuesto&rowIndex=${rowIndex}`, {
-            method: "POST"
+function eliminarPresupuesto(id) {
+    if (confirm("¿Estás seguro de rechazar este presupuesto?")) {
+        fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "eliminarPresupuesto", id: id })
         })
-        .then(response => response.text())
-        .then(() => {
-            alert("Presupuesto eliminado exitosamente");
-            cargarPresupuestos();
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Presupuesto rechazado");
+                cargarPresupuestos();
+            }
         })
-        .catch(error => {
-            console.error("Error al eliminar:", error);
-            alert("Error al eliminar el presupuesto. Por favor, intente nuevamente.");
-        });
+        .catch(error => console.error("Error al rechazar:", error));
     }
 }
