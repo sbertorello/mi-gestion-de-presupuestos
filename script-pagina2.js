@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 function cargarPresupuestos() {
-    fetch(`${API_URL}?action=getPresupuestos`, { mode: 'cors' })
+    fetch(`${API_URL}?action=getPresupuestos`)
         .then(response => response.json())
         .then(data => {
             console.log("Datos recibidos:", data);
@@ -23,14 +23,14 @@ function cargarPresupuestos() {
                 const eventoDiv = document.createElement("div");
                 eventoDiv.classList.add("presupuesto-box");
                 eventoDiv.innerHTML = `
-                    <h3 onclick="toggleDetalles(${evento.id})">${evento.nombreEvento}</h3>
+                    <h3 onclick="toggleDetalles('${evento.id}')">${evento.nombreEvento}</h3>
                     <div id="detalles-${evento.id}" class="detalles" style="display: none;">
                         <p><strong>Precio:</strong> ${evento.precio}</p>
                         <p><strong>Tipo:</strong> ${evento.tipoEvento}</p>
                         <p><strong>Cuotas:</strong> ${evento.cuotas}</p>
                         <p><strong>Fecha:</strong> ${evento.fechaEvento}</p>
-                        <button class="btn-confirmar" onclick="confirmarPresupuesto(${evento.id})">Confirmar</button>
-                        <button class="btn-eliminar" onclick="eliminarPresupuesto(${evento.id})">Eliminar</button>
+                        <button class="btn-confirmar" onclick="confirmarPresupuesto('${evento.id}')">Confirmar</button>
+                        <button class="btn-eliminar" onclick="eliminarPresupuesto('${evento.id}')">Eliminar</button>
                     </div>
                 `;
                 container.appendChild(eventoDiv);
@@ -61,16 +61,10 @@ function eliminarPresupuesto(id) {
 function actualizarEstado(id, action) {
     fetch(API_URL, {
         method: "POST",
-        mode: 'cors',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action, id })
     })
     .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert(data.message);
-            cargarPresupuestos(); // Actualiza la página
-        }
-    })
+    .then(() => cargarPresupuestos()) // Recarga la página después de la acción
     .catch(error => console.error(`Error al ${action}:`, error));
 }
