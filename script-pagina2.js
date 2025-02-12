@@ -24,7 +24,13 @@ function cargarPresupuestos() {
 
 function mostrarPresupuestos(presupuestos) {
     const lista = document.getElementById("lista-presupuestos");
-    lista.innerHTML = ""; // Limpiar lista
+    
+    if (!lista) {  
+        console.error("Elemento 'lista-presupuestos' no encontrado en el HTML.");
+        return;
+    }
+
+    lista.innerHTML = ""; // Limpiar antes de agregar nuevos presupuestos
 
     if (presupuestos.length === 0) {
         lista.innerHTML = "<p>No hay presupuestos disponibles.</p>";
@@ -34,6 +40,7 @@ function mostrarPresupuestos(presupuestos) {
     presupuestos.forEach(presupuesto => {
         const item = document.createElement("div");
         item.classList.add("presupuesto-item");
+
         item.innerHTML = `
             <p><strong>ID:</strong> ${presupuesto.ID}</p>
             <p><strong>Cliente:</strong> ${presupuesto.Cliente}</p>
@@ -42,6 +49,7 @@ function mostrarPresupuestos(presupuestos) {
             <button onclick="confirmarPresupuesto('${presupuesto.ID}')">Confirmar</button>
             <button onclick="rechazarPresupuesto('${presupuesto.ID}')">Rechazar</button>
         `;
+        
         lista.appendChild(item);
     });
 }
@@ -51,7 +59,7 @@ function confirmarPresupuesto(id) {
         .then(response => response.json())
         .then(data => {
             console.log(data);
-            cargarPresupuestos();
+            cargarPresupuestos(); // Recargar la lista
         })
         .catch(error => console.error("Error al confirmar presupuesto:", error));
 }
@@ -61,7 +69,7 @@ function rechazarPresupuesto(id) {
         .then(response => response.json())
         .then(data => {
             console.log(data);
-            cargarPresupuestos();
+            cargarPresupuestos(); // Recargar la lista
         })
         .catch(error => console.error("Error al rechazar presupuesto:", error));
 }
