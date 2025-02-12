@@ -1,90 +1,67 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbxtF-PyqeFnv8Qy1-sKPMj30H94m6lyQL4Zi9N7GUYljBk1qpJFnyTVAkdWR-TN9lAolQ/exec";
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", () => {
     console.log("Página cargada. Cargando presupuestos...");
     cargarPresupuestos();
 });
 
 function cargarPresupuestos() {
-    fetch(`${API_URL}?action=getPresupuestos`, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json"
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`Error en la solicitud: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log("Datos recibidos:", data);
-        const container = document.getElementById("presupuestos-container");
-
-        if (!container) {
-            console.error("No se encontró el contenedor de presupuestos.");
-            return;
-        }
-
-        container.innerHTML = data.length === 0 ? "<p>No hay presupuestos disponibles.</p>" : "";
-
-        data.forEach(evento => {
-            const eventoDiv = document.createElement("div");
-            eventoDiv.classList.add("presupuesto-box");
-            eventoDiv.innerHTML = `
-                <h3 onclick="toggleDetalles('${evento.id}')">${evento.nombreEvento}</h3>
-                <div id="detalles-${evento.id}" class="detalles" style="display: none;">
-                    <p><strong>Precio:</strong> ${evento.precio}</p>
-                    <p><strong>Tipo:</strong> ${evento.tipoEvento}</p>
-                    <p><strong>Cuotas:</strong> ${evento.cuotas}</p>
-                    <p><strong>Fecha:</strong> ${evento.fechaEvento}</p>
-                    <button class="btn-confirmar" onclick="confirmarPresupuesto('${evento.id}')">Confirmar</button>
-                    <button class="btn-eliminar" onclick="eliminarPresupuesto('${evento.id}')">Eliminar</button>
-                </div>
-            `;
-            container.appendChild(eventoDiv);
+    fetch(`${API_URL}?action=getPresupuestos`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("Presupuestos recibidos:", data);
+            mostrarPresupuestos(data);
+        })
+        .catch(error => {
+            console.error("Error al cargar los presupuestos:", error);
         });
-    })
-    .catch(error => console.error("Error al cargar los presupuestos:", error));
 }
 
-function toggleDetalles(id) {
-    const detalles = document.getElementById(`detalles-${id}`);
-    if (detalles) {
-        detalles.style.display = detalles.style.display === "none" ? "block" : "none";
+function mostrarPresupuestos(presupuestos) {
+    const lista = document.getElementById("lista-presupuestos");
+    lista.innerHTML = ""; // Limpiar lista
+
+    if (presupuestos.length === 0) {
+        lista.innerHTML = "<p>No hay presupuestos disponibles.</p>";
+        return;
     }
+
+    presupuestos.forEach(presupuesto => {
+        const item = document.createElement("div");
+        item.classList.add("presupuesto-item");
+        item.innerHTML = `
+            <p><strong>ID:</strong> ${presupuesto.ID}</p>
+            <p><strong>Cliente:</strong> ${presupuesto.Cliente}</p>
+            <p><strong>Monto:</strong> ${presupuesto.Monto}</p>
+            <p><strong>Estado:</strong> ${presupuesto.Estado}</p>
+            <button onclick="confirmarPresupuesto('${presupuesto.ID}')">Confirmar</button>
+            <button onclick="rechazarPresupuesto('${presupuesto.ID}')">Rechazar</button>
+        `;
+        lista.appendChild(item);
+    });
 }
 
 function confirmarPresupuesto(id) {
-    if (confirm("¿Estás seguro de confirmar este presupuesto?")) {
-        actualizarEstado(id, "confirmarPresupuesto");
-    }
+    fetch(`${API_URL}?action=confirmarPresupuesto&id=${id}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            cargarPresupuestos();
+        })
+        .catch(error => console.error("Error al confirmar presupuesto:", error));
 }
 
-function eliminarPresupuesto(id) {
-    if (confirm("¿Estás seguro de eliminar este presupuesto?")) {
-        actualizarEstado(id, "eliminarPresupuesto");
-    }
-}
-
-function actualizarEstado(id, action) {
-    fetch(API_URL, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ action, id })
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`Error en la solicitud: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(() => {
-        console.log(`Presupuesto ${id} ${action === "confirmarPresupuesto" ? "confirmado" : "rechazado"}`);
-        cargarPresupuestos();
-    })
-    .catch(error => console.error(`Error al ${action}:`, error));
+function rechazarPresupuesto(id) {
+    fetch(`${API_URL}?action=rechazarPresupuesto&id=${id}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            cargarPresupuestos();
+        })
+        .catch(error => console.error("Error al rechazar presupuesto:", error));
 }
