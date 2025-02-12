@@ -61,19 +61,21 @@ function toggleDetalles(id) {
 }
 
 function confirmarPresupuesto(id) {
-    fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "confirmarPresupuesto", id: id })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert("Presupuesto confirmado");
-            cargarPresupuestos();
-        }
-    })
-    .catch(error => console.error("Error al confirmar:", error));
+    if (confirm("¿Estás seguro de confirmar este presupuesto?")) {
+        fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "confirmarPresupuesto", id: id })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Presupuesto confirmado");
+                cargarPresupuestos();
+            }
+        })
+        .catch(error => console.error("Error al confirmar:", error));
+    }
 }
 
 function eliminarPresupuesto(id) {
