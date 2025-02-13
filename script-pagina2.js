@@ -2,7 +2,6 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbxtF-PyqeFnv8Qy1-sKPMj3
 const container = document.getElementById('presupuestos-container');
 const loadingDiv = document.getElementById('loading');
 
-// Función para cargar los presupuestos
 async function cargarPresupuestos() {
     try {
         loadingDiv.style.display = 'block';
@@ -25,20 +24,22 @@ async function cargarPresupuestos() {
     }
 }
 
-// Función para crear el elemento HTML de cada presupuesto
 function crearElementoPresupuesto(presupuesto) {
     const div = document.createElement('div');
-    div.className = 'presupuesto-container';
+    div.className = 'presupuesto-box';
+    
+    const nombreEvento = presupuesto['Nombre del Evento'] || 'Sin nombre';
+    
     div.innerHTML = `
-        <div class="presupuesto-header" onclick="togglePresupuesto(this)">
-            ${presupuesto['Nombre del Evento']}
+        <div class="evento-nombre" onclick="toggleEvento(this)">
+            ${nombreEvento}
         </div>
-        <div class="presupuesto-content">
-            <p><strong>ID:</strong> ${presupuesto.ID}</p>
-            <p><strong>Precio:</strong> ${presupuesto.Precio}</p>
-            <p><strong>Tipo de Evento:</strong> ${presupuesto['Tipo de Evento']}</p>
-            <p><strong>Cuotas:</strong> ${presupuesto.Cuotas}</p>
-            <p><strong>Fecha del Evento:</strong> ${presupuesto['Fecha del Evento']}</p>
+        <div class="evento-detalle">
+            <p><strong>ID:</strong> ${presupuesto.ID || 'No disponible'}</p>
+            <p><strong>Precio:</strong> ${presupuesto.Precio || 'No disponible'}</p>
+            <p><strong>Tipo de Evento:</strong> ${presupuesto['Tipo de Evento'] || 'No disponible'}</p>
+            <p><strong>Cuotas:</strong> ${presupuesto.Cuotas || 'No disponible'}</p>
+            <p><strong>Fecha del Evento:</strong> ${presupuesto['Fecha del Evento'] || 'No disponible'}</p>
             <button class="btn-confirmar" onclick="confirmarPresupuesto('${presupuesto.ID}')">
                 Confirmar
             </button>
@@ -50,13 +51,11 @@ function crearElementoPresupuesto(presupuesto) {
     return div;
 }
 
-// Función para expandir/contraer el contenido del presupuesto
-function togglePresupuesto(header) {
-    const content = header.nextElementSibling;
-    content.classList.toggle('active');
+function toggleEvento(elemento) {
+    const detalles = elemento.nextElementSibling;
+    detalles.classList.toggle('mostrar');
 }
 
-// Función para confirmar un presupuesto
 async function confirmarPresupuesto(id) {
     if (confirm('¿Está seguro de confirmar este presupuesto?')) {
         try {
@@ -66,7 +65,7 @@ async function confirmarPresupuesto(id) {
             
             if (data.success) {
                 alert('Presupuesto confirmado exitosamente');
-                cargarPresupuestos(); // Recargar la lista
+                await cargarPresupuestos();
             } else {
                 alert(data.error || 'Error al confirmar el presupuesto');
             }
@@ -79,7 +78,6 @@ async function confirmarPresupuesto(id) {
     }
 }
 
-// Función para rechazar un presupuesto
 async function rechazarPresupuesto(id) {
     if (confirm('¿Está seguro de eliminar este presupuesto?')) {
         try {
@@ -89,7 +87,7 @@ async function rechazarPresupuesto(id) {
             
             if (data.success) {
                 alert('Presupuesto eliminado exitosamente');
-                cargarPresupuestos(); // Recargar la lista
+                await cargarPresupuestos();
             } else {
                 alert(data.error || 'Error al eliminar el presupuesto');
             }
@@ -102,5 +100,4 @@ async function rechazarPresupuesto(id) {
     }
 }
 
-// Cargar presupuestos al iniciar la página
 document.addEventListener('DOMContentLoaded', cargarPresupuestos);
