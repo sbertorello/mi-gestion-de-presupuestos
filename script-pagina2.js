@@ -8,22 +8,18 @@ async function cargarPresupuestos() {
         container.innerHTML = '';
 
         const response = await fetch(`${API_URL}?action=getPresupuestos`);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+
         const data = await response.json();
 
         if (Array.isArray(data) && data.length > 0) {
-            data.forEach(presupuesto => {
-                const presupuestoElement = crearElementoPresupuesto(presupuesto);
-                container.appendChild(presupuestoElement);
-            });
+            data.forEach(presupuesto => container.appendChild(crearElementoPresupuesto(presupuesto)));
         } else {
             container.innerHTML = '<p>No hay presupuestos pendientes.</p>';
         }
     } catch (error) {
         console.error('Error al cargar presupuestos:', error);
-        container.innerHTML = '<p>Error al cargar los presupuestos. Por favor, intente más tarde.</p>';
+        container.innerHTML = '<p>Error al cargar los presupuestos. Intente más tarde.</p>';
     } finally {
         loadingDiv.style.display = 'none';
     }
@@ -34,21 +30,17 @@ function crearElementoPresupuesto(presupuesto) {
     div.className = 'presupuesto-box';
     
     div.innerHTML = `
-        <div class="evento-nombre" onclick="toggleEvento(this)">
+        <div class="evento-nombre" onclick="toggleEvento(this)" aria-expanded="false">
             ${presupuesto['Nombre del Evento']}
         </div>
-        <div class="evento-detalle">
+        <div class="evento-detalle" aria-hidden="true">
             <p><strong>ID:</strong> ${presupuesto.ID}</p>
             <p><strong>Precio:</strong> ${presupuesto.Precio}</p>
             <p><strong>Tipo de Evento:</strong> ${presupuesto['Tipo de Evento']}</p>
             <p><strong>Cuotas:</strong> ${presupuesto.Cuotas}</p>
             <p><strong>Fecha del Evento:</strong> ${presupuesto['Fecha del Evento']}</p>
-            <button class="btn-confirmar" onclick="confirmarPresupuesto('${presupuesto.ID}')">
-                Confirmar
-            </button>
-            <button class="btn-eliminar" onclick="rechazarPresupuesto('${presupuesto.ID}')">
-                Eliminar
-            </button>
+            <button class="btn-confirmar" onclick="gestionarPresupuesto('${presupuesto.ID}', 'confirmar')">Confirmar</button>
+            <button class="btn-eliminar" onclick="gestionarPresupuesto('${presupuesto.ID}', 'rechazar')">Eliminar</button>
         </div>
     `;
     return div;
@@ -56,66 +48,36 @@ function crearElementoPresupuesto(presupuesto) {
 
 function toggleEvento(elemento) {
     const detalles = elemento.nextElementSibling;
+    const isExpanded = elemento.getAttribute('aria-expanded') === 'true';
+    
     detalles.classList.toggle('mostrar');
+    elemento.setAttribute('aria-expanded', !isExpanded);
+    detalles.setAttribute('aria-hidden', isExpanded);
 }
 
-async function confirmarPresupuesto(id) {
-    if (!id) {
-        alert('Error: ID no válido');
-        return;
-    }
-    
-    if (confirm('¿Está seguro de confirmar este presupuesto?')) {
-        try {
-            loadingDiv.style.display = 'block';
-            const response = await fetch(`${API_URL}?action=confirmarPresupuesto&id=${id}`);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json();
-            
-            if (data.success) {
-                alert('Presupuesto confirmado exitosamente');
-                await cargarPresupuestos();
-            } else {
-                alert(data.error || 'Error al confirmar el presupuesto');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Error al procesar la solicitud');
-        } finally {
-            loadingDiv.style.display = 'none';
-        }
-    }
-}
+async function gestionarPresupuesto(id, accion) {
+    if (!id) return alert('Error: ID no válido');
 
-async function rechazarPresupuesto(id) {
-    if (!id) {
-        alert('Error: ID no válido');
-        return;
-    }
-    
-    if (confirm('¿Está seguro de eliminar este presupuesto?')) {
-        try {
-            loadingDiv.style.display = 'block';
-            const response = await fetch(`${API_URL}?action=rechazarPresupuesto&id=${id}`);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json();
-            
-            if (data.success) {
-                alert('Presupuesto eliminado exitosamente');
-                await cargarPresupuestos();
-            } else {
-                alert(data.error || 'Error al eliminar el presupuesto');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Error al procesar la solicitud');
-        } finally {
-            loadingDiv.style.display = 'none';
+    const confirmacion = confirm(`¿Está seguro de ${accion === 'confirmar' ? 'confirmar' : 'eliminar'} este presupuesto?`);
+    if (!confirmacion) return;
+
+    try {
+        loadingDiv.style.display = 'block';
+        const response = await fetch(`${API_URL}?action=${accion}Presupuesto&id=${id}`);
+        if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+
+        const data = await response.json();
+        if (data.success) {
+            alert(`Presupuesto ${accion === 'confirmar' ? 'confirmado' : 'eliminado'} exitosamente`);
+            await cargarPresupuestos();
+        } else {
+            alert(data.error || `Error al ${accion === 'confirmar' ? 'confirmar' : 'eliminar'} el presupuesto`);
         }
+    } catch (error) {
+        console.error('Error:', error);
+        alert(`Error al procesar la solicitud de ${accion} presupuesto`);
+    } finally {
+        loadingDiv.style.display = 'none';
     }
 }
 
