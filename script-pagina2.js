@@ -8,13 +8,18 @@ async function cargarPresupuestos() {
         container.innerHTML = '';
 
         const response = await fetch(`${API_URL}?action=getPresupuestos`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
 
-        if (Array.isArray(data)) {
+        if (Array.isArray(data) && data.length > 0) {
             data.forEach(presupuesto => {
                 const presupuestoElement = crearElementoPresupuesto(presupuesto);
                 container.appendChild(presupuestoElement);
             });
+        } else {
+            container.innerHTML = '<p>No hay presupuestos pendientes.</p>';
         }
     } catch (error) {
         console.error('Error al cargar presupuestos:', error);
@@ -28,18 +33,16 @@ function crearElementoPresupuesto(presupuesto) {
     const div = document.createElement('div');
     div.className = 'presupuesto-box';
     
-    const nombreEvento = presupuesto['Nombre del Evento'] || 'Sin nombre';
-    
     div.innerHTML = `
         <div class="evento-nombre" onclick="toggleEvento(this)">
-            ${nombreEvento}
+            ${presupuesto['Nombre del Evento']}
         </div>
         <div class="evento-detalle">
-            <p><strong>ID:</strong> ${presupuesto.ID || 'No disponible'}</p>
-            <p><strong>Precio:</strong> ${presupuesto.Precio || 'No disponible'}</p>
-            <p><strong>Tipo de Evento:</strong> ${presupuesto['Tipo de Evento'] || 'No disponible'}</p>
-            <p><strong>Cuotas:</strong> ${presupuesto.Cuotas || 'No disponible'}</p>
-            <p><strong>Fecha del Evento:</strong> ${presupuesto['Fecha del Evento'] || 'No disponible'}</p>
+            <p><strong>ID:</strong> ${presupuesto.ID}</p>
+            <p><strong>Precio:</strong> ${presupuesto.Precio}</p>
+            <p><strong>Tipo de Evento:</strong> ${presupuesto['Tipo de Evento']}</p>
+            <p><strong>Cuotas:</strong> ${presupuesto.Cuotas}</p>
+            <p><strong>Fecha del Evento:</strong> ${presupuesto['Fecha del Evento']}</p>
             <button class="btn-confirmar" onclick="confirmarPresupuesto('${presupuesto.ID}')">
                 Confirmar
             </button>
@@ -57,10 +60,18 @@ function toggleEvento(elemento) {
 }
 
 async function confirmarPresupuesto(id) {
+    if (!id) {
+        alert('Error: ID no válido');
+        return;
+    }
+    
     if (confirm('¿Está seguro de confirmar este presupuesto?')) {
         try {
             loadingDiv.style.display = 'block';
             const response = await fetch(`${API_URL}?action=confirmarPresupuesto&id=${id}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             const data = await response.json();
             
             if (data.success) {
@@ -79,10 +90,18 @@ async function confirmarPresupuesto(id) {
 }
 
 async function rechazarPresupuesto(id) {
+    if (!id) {
+        alert('Error: ID no válido');
+        return;
+    }
+    
     if (confirm('¿Está seguro de eliminar este presupuesto?')) {
         try {
             loadingDiv.style.display = 'block';
             const response = await fetch(`${API_URL}?action=rechazarPresupuesto&id=${id}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             const data = await response.json();
             
             if (data.success) {
