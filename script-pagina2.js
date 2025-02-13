@@ -34,37 +34,44 @@ function obtenerPresupuestos() {
         contenedor.appendChild(presupuestoDiv);
       });
     })
-    .catch(error => console.error('Error:', error));
+    .catch(error => {
+      console.error('Error:', error);
+      document.getElementById('presupuestos-contenedor').innerHTML = '<p>Error al cargar los presupuestos.</p>';
+    });
 }
 
 // Función para confirmar un presupuesto
 function confirmarPresupuesto(id) {
-  fetch(`${PI_URL}?action=confirmarPresupuesto&id=${id}`)
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        alert(data.message);
-        obtenerPresupuestos(); // Refrescar la lista de presupuestos
-      } else {
-        alert(data.error);
-      }
-    })
-    .catch(error => console.error('Error:', error));
+  if (confirm("¿Estás seguro de confirmar este presupuesto?")) {
+    fetch(`${PI_URL}?action=confirmarPresupuesto&id=${id}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert(data.message);
+          obtenerPresupuestos(); // Refrescar la lista de presupuestos
+        } else {
+          alert(data.error);
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  }
 }
 
 // Función para rechazar un presupuesto
 function rechazarPresupuesto(id) {
-  fetch(`${PI_URL}?action=rechazarPresupuesto&id=${id}`)
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        alert(data.message);
-        obtenerPresupuestos(); // Refrescar la lista de presupuestos
-      } else {
-        alert(data.error);
-      }
-    })
-    .catch(error => console.error('Error:', error));
+  if (confirm("¿Estás seguro de rechazar este presupuesto?")) {
+    fetch(`${PI_URL}?action=rechazarPresupuesto&id=${id}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert(data.message);
+          obtenerPresupuestos(); // Refrescar la lista de presupuestos
+        } else {
+          alert(data.error);
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  }
 }
 
 // Función para expandir/contraer los detalles de un presupuesto
