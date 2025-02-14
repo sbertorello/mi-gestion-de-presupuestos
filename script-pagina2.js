@@ -5,12 +5,12 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxtF-PyqeFnv8Qy1-sKPMj3
 async function cargarPresupuestosPendientes() {
   try {
     const response = await fetch(`${API_URL}?action=obtenerPendientes`);
-    if (!response.ok) throw new Error("Error en la solicitud");
+    if (!response.ok) throw new Error("Error en la solicitud al servidor");
 
     const data = await response.json();
-    
+
     if (!data || !data.presupuestos) {
-      throw new Error("No se recibieron datos válidos");
+      throw new Error("No se recibieron datos válidos desde el servidor");
     }
 
     const lista = document.getElementById("lista-presupuestos");
@@ -59,14 +59,14 @@ async function cargarPresupuestosPendientes() {
     });
   } catch (error) {
     console.error("Error al cargar los presupuestos:", error);
-    document.getElementById("lista-presupuestos").innerHTML = `<p style="color:red;">Error al cargar los datos.</p>`;
+    document.getElementById("lista-presupuestos").innerHTML = `<p style="color:red;">Error al cargar los datos: ${error.message}</p>`;
   }
 }
 
 async function actualizarPresupuesto(id, accion) {
   try {
     const response = await fetch(`${API_URL}?action=${accion}&id=${id}`);
-    if (!response.ok) throw new Error("Error en la solicitud");
+    if (!response.ok) throw new Error("Error en la solicitud al servidor");
 
     const data = await response.json();
     if (data.success) {
