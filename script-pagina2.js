@@ -6,10 +6,20 @@ async function cargarPresupuestosPendientes() {
   try {
     const response = await fetch(`${API_URL}?action=obtenerPendientes`);
     if (!response.ok) throw new Error("Error en la solicitud");
-    
+
     const data = await response.json();
+    
+    if (!data || !data.presupuestos) {
+      throw new Error("No se recibieron datos válidos");
+    }
+
     const lista = document.getElementById("lista-presupuestos");
     lista.innerHTML = "";
+
+    if (data.presupuestos.length === 0) {
+      lista.innerHTML = "<p>No hay presupuestos pendientes.</p>";
+      return;
+    }
 
     data.presupuestos.forEach(presupuesto => {
       const contenedor = document.createElement("div");
@@ -49,6 +59,7 @@ async function cargarPresupuestosPendientes() {
     });
   } catch (error) {
     console.error("Error al cargar los presupuestos:", error);
+    document.getElementById("lista-presupuestos").innerHTML = `<p style="color:red;">Error al cargar los datos.</p>`;
   }
 }
 
