@@ -1,61 +1,70 @@
-// URL del Google Apps Script
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzIxBOkWqhvjIBocmR8ZGljvyJDl5m3cZOaz4qAr-BXmsOvplcN_crmKawKy_nhsnGuxQ/exec';
+// Configuración global
+const CONFIG = {
+    API_URL: 'https://script.google.com/macros/s/AKfycbzIxBOkWqhvjIBocmR8ZGljvyJDl5m3cZOaz4qAr-BXmsOvplcN_crmKawKy_nhsnGuxQ/exec',
+    ESTADOS: {
+        PENDIENTE: 'Pendiente',
+        CONFIRMADO: 'Confirmado',
+        RECHAZADO: 'Rechazado'
+    }
+};
 
 // Elementos del DOM
-const contenedorEventos = document.getElementById('eventos-container');
-const loadingElement = document.getElementById('loading');
+const elements = {
+    container: document.getElementById('eventos-container'),
+    loading: document.getElementById('loading')
+};
 
-// Función para mostrar/ocultar el indicador de carga
-function toggleLoading(show) {
-    loadingElement.style.display = show ? 'block' : 'none';
-}
-
-// Función para cargar los eventos pendientes
-async function cargarEventosPendientes() {
-    try {
-        toggleLoading(true);
-        const response = await fetch(`${SCRIPT_URL}?action=obtenerEventosPendientes`);
-        const data = await response.json();
-        
-        if (!data) {
-            throw new Error('No se recibieron datos del servidor');
-        }
-        
-        if (data.success) {
-            mostrarEventos(data.eventos || []);
-        } else {
-            throw new Error(data.error || 'Error al cargar eventos');
-        }
-    } catch (error) {
-        console.error('Error al cargar eventos:', error);
-        contenedorEventos.innerHTML = `<p class="error">Error al cargar los eventos: ${error.message}</p>`;
-    } finally {
-        toggleLoading(false);
+// Utilidades
+const utils = {
+    formatCurrency: (amount) => `$${parseFloat(amount).toLocaleString('es-AR')}`,
+    formatDate: (date) => new Date(date).toLocaleDateString('es-AR'),
+    toggleLoading: (show) => {
+        elements.loading.style.display = show ? 'block' : 'none';
     }
-}
+};
 
-// Función para mostrar los eventos en el DOM
-function mostrarEventos(eventos) {
-    if (eventos.length === 0) {
-        contenedorEventos.innerHTML = '<p>No hay eventos pendientes</p>';
-        return;
-    }
+// Funciones de API
+const api = {
+    async fetchData(action, params = {}) {
+        const queryString = new URLSearchParams({ action, ...params }).toString();
+        const url = `${CONFIG.API_URL}?${queryString}`;
 
-    contenedorEventos.innerHTML = '';
-    
-    eventos.forEach(evento => {
-        const elementoEvento = document.createElement('div');
-        elementoEvento.className = 'evento';
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            if (!data.success) {
+                throw new Error(data.error || 'Error en la respuesta del servidor');
+            }
+            return data;
+        } catch (error) {
+            console.error('Error en fetchData:', error);
+            throw error;
+        }
+    },
+
+    getEventos: () => api.fetchData('obtenerEventosPendientes'),
+    confirmarEvento: (id) => api.fetchData('confirmarEvento', { id }),
+    eliminarEvento: (id) => api.fetchData('eliminarEvento', { id })
+};
+
+// Funciones de UI
+const ui = {
+    crearElementoEvento(evento) {
+        const elemento = document.createElement('div');
+        elemento.className = 'evento';
         
-        const nombreEvento = document.createElement('h3');
-        nombreEvento.textContent = evento.nombre;
-        nombreEvento.className = 'evento-titulo';
+        const titulo = document.createElement('h3');
+        titulo.className = 'evento-titulo';
+        titulo.textContent = evento.nombre;
         
-        const detallesEvento = document.createElement('div');
-        detallesEvento.className = 'evento-detalles oculto';
-        detallesEvento.innerHTML = `
+        const detalles = document.createElement('div');
+        detalles.className = 'evento-detalles oculto';
+        detalles.innerHTML = `
             <p><strong>Tipo de Evento:</strong> ${evento.tipo}</p>
-            <p><strong>Precio:</strong> $${evento.precio}</p>
+            <p><strong>Precio:</strong> ${utils.formatCurrency(evento.precio)}</p>
             <p><strong>Cuotas:</strong> ${evento.cuotas}</p>
             <p><strong>Fecha:</strong> ${evento.fecha}</p>
             <div class="botones-accion">
@@ -63,55 +72,102 @@ function mostrarEventos(eventos) {
                 <button class="btn-eliminar" data-id="${evento.id}">❌ Eliminar</button>
             </div>
         `;
-        
-        nombreEvento.addEventListener('click', () => {
-            detallesEvento.classList.toggle('oculto');
-        });
-        
-        elementoEvento.appendChild(nombreEvento);
-        elementoEvento.appendChild(detallesEvento);
-        contenedorEventos.appendChild(elementoEvento);
-    });
-    
-    // Agregar event listeners para los botones
-    document.querySelectorAll('.btn-confirmar').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            if (confirm('¿Deseas confirmar este evento?')) {
-                const id = e.target.dataset.id;
-                await manejarAccionEvento(id, 'confirmar');
-            }
-        });
-    });
-    
-    document.querySelectorAll('.btn-eliminar').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            if (confirm('¿Estás seguro de que deseas eliminar este evento?')) {
-                const id = e.target.dataset.id;
-                await manejarAccionEvento(id, 'eliminar');
-            }
-        });
-    });
-}
 
-// Función para manejar las acciones de confirmar/eliminar
-async function manejarAccionEvento(id, accion) {
-    try {
-        toggleLoading(true);
-        const response = await fetch(`${SCRIPT_URL}?action=${accion}Evento&id=${id}`);
-        const data = await response.json();
-        
-        if (data.success) {
-            await cargarEventosPendientes();
-        } else {
-            throw new Error(data.error || `Error al ${accion} el evento`);
+        titulo.addEventListener('click', () => {
+            detalles.classList.toggle('oculto');
+        });
+
+        elemento.appendChild(titulo);
+        elemento.appendChild(detalles);
+        return elemento;
+    },
+
+    mostrarError(mensaje) {
+        elements.container.innerHTML = `
+            <div class="error-mensaje">
+                <p>Error: ${mensaje}</p>
+                <button onclick="app.cargarEventos()">Reintentar</button>
+            </div>
+        `;
+    },
+
+    mostrarEventosVacios() {
+        elements.container.innerHTML = '<p class="sin-eventos">No hay eventos pendientes</p>';
+    },
+
+    async confirmarEvento(id) {
+        if (await ui.confirmarAccion('¿Deseas confirmar este evento?')) {
+            await app.manejarAccion(id, 'confirmar');
         }
-    } catch (error) {
-        console.error(`Error al ${accion} evento:`, error);
-        alert(`Error al ${accion} el evento: ${error.message}`);
-    } finally {
-        toggleLoading(false);
-    }
-}
+    },
 
-// Cargar eventos al iniciar la página
-document.addEventListener('DOMContentLoaded', cargarEventosPendientes);
+    async eliminarEvento(id) {
+        if (await ui.confirmarAccion('¿Estás seguro de que deseas eliminar este evento?')) {
+            await app.manejarAccion(id, 'eliminar');
+        }
+    },
+
+    confirmarAccion(mensaje) {
+        return new Promise(resolve => {
+            resolve(window.confirm(mensaje));
+        });
+    }
+};
+
+// Aplicación principal
+const app = {
+    async cargarEventos() {
+        utils.toggleLoading(true);
+        try {
+            const data = await api.getEventos();
+            const eventos = data.eventos || [];
+
+            if (eventos.length === 0) {
+                ui.mostrarEventosVacios();
+                return;
+            }
+
+            elements.container.innerHTML = '';
+            eventos.forEach(evento => {
+                elements.container.appendChild(ui.crearElementoEvento(evento));
+            });
+
+            this.agregarEventListeners();
+        } catch (error) {
+            console.error('Error al cargar eventos:', error);
+            ui.mostrarError(error.message);
+        } finally {
+            utils.toggleLoading(false);
+        }
+    },
+
+    agregarEventListeners() {
+        document.querySelectorAll('.btn-confirmar').forEach(btn => {
+            btn.addEventListener('click', (e) => ui.confirmarEvento(e.target.dataset.id));
+        });
+
+        document.querySelectorAll('.btn-eliminar').forEach(btn => {
+            btn.addEventListener('click', (e) => ui.eliminarEvento(e.target.dataset.id));
+        });
+    },
+
+    async manejarAccion(id, tipo) {
+        utils.toggleLoading(true);
+        try {
+            await api[tipo === 'confirmar' ? 'confirmarEvento' : 'eliminarEvento'](id);
+            await this.cargarEventos();
+        } catch (error) {
+            console.error(`Error al ${tipo} evento:`, error);
+            alert(`Error al ${tipo} el evento: ${error.message}`);
+        } finally {
+            utils.toggleLoading(false);
+        }
+    },
+
+    init() {
+        this.cargarEventos();
+    }
+};
+
+// Iniciar la aplicación cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', () => app.init());
