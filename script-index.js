@@ -1,40 +1,75 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbxtF-PyqeFnv8Qy1-sKPMj30H94m6lyQL4Zi9N7GUYljBk1qpJFnyTVAkdWR-TN9lAolQ/exec"; // Reemplaza con tu URL
+document.addEventListener("DOMContentLoaded", cargarPresupuestosPendientes);
 
-document.addEventListener("DOMContentLoaded", function () {
-  document
-    .getElementById("formPresupuesto")
-    .addEventListener("submit", function (e) {
-      e.preventDefault();
+const API_URL = "https://script.google.com/macros/s/AKfycbxtF-PyqeFnv8Qy1-sKPMj30H94m6lyQL4Zi9N7GUYljBk1qpJFnyTVAkdWR-TN9lAolQ/exec";
 
-      const nombreEvento = document.getElementById("nombreEvento").value;
-      const precio = document.getElementById("precio").value;
-      const tipoEvento = document.getElementById("tipoEvento").value;
-      const cuotas = document.getElementById("cuotas").value;
-      const fechaEvento = document.getElementById("fechaEvento").value;
+async function cargarPresupuestosPendientes() {
+  try {
+    const response = await fetch(`${API_URL}?action=obtenerPendientes`);
+    if (!response.ok) throw new Error("Error en la solicitud");
 
-      const data = {
-        nombreEvento,
-        precio,
-        tipoEvento,
-        cuotas,
-        fechaEvento,
+    const data = await response.json();
+    const lista = document.getElementById("lista-presupuestos");
+    lista.innerHTML = "";
+
+    if (!data.presupuestos || data.presupuestos.length === 0) {
+      lista.innerHTML = "<p>No hay presupuestos pendientes.</p>";
+      return;
+    }
+
+    data.presupuestos.forEach(presupuesto => {
+      const contenedor = document.createElement("div");
+      contenedor.classList.add("presupuesto-item");
+
+      const titulo = document.createElement("h3");
+      titulo.textContent = presupuesto.nombre;
+      titulo.onclick = () => {
+        detalles.style.display = detalles.style.display === "none" ? "block" : "none";
       };
 
-      fetch(API_URL, {
-        method: "POST",
-        mode: "no-cors", // Cambiamos a "no-cors" para evitar problemas de CORS
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      })
-        .then(() => {
-          alert("Datos guardados correctamente");
-          document.getElementById("formPresupuesto").reset(); // Limpiar el formulario
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-          alert("Hubo un error al guardar los datos");
-        });
+      const detalles = document.createElement("div");
+      detalles.classList.add("detalles");
+      detalles.style.display = "none";
+      detalles.innerHTML = `
+        <p><strong>Tipo:</strong> ${presupuesto.tipo}</p>
+        <p><strong>Precio:</strong> $${presupuesto.precio}</p>
+        <p><strong>Cuotas:</strong> ${presupuesto.cuotas}</p>
+        <p><strong>Fecha:</strong> ${presupuesto.fecha}</p>
+      `;
+
+      const botonConfirmar = document.createElement("button");
+      botonConfirmar.textContent = "✅ Confirmar";
+      botonConfirmar.classList.add("confirmar");
+      botonConfirmar.onclick = () => actualizarPresupuesto(presupuesto.id, "confirmarPresupuesto");
+
+      const botonEliminar = document.createElement("button");
+      botonEliminar.textContent = "❌ Eliminar";
+      botonEliminar.classList.add("eliminar");
+      botonEliminar.onclick = () => actualizarPresupuesto(presupuesto.id, "eliminarPresupuesto");
+
+      detalles.appendChild(botonConfirmar);
+      detalles.appendChild(botonEliminar);
+      contenedor.appendChild(titulo);
+      contenedor.appendChild(detalles);
+      lista.appendChild(contenedor);
     });
-});
+  } catch (error) {
+    console.error("Error al cargar los presupuestos:", error);
+  }
+}
+
+async function actualizarPresupuesto(id, accion) {
+  try {
+    const response = await fetch(`${API_URL}?action=${accion}&id=${id}`);
+    if (!response.ok) throw new Error("Error en la solicitud");
+
+    const data = await response.json();
+    if (data.success) {
+      alert(`Presupuesto ${accion === "confirmarPresupuesto" ? "confirmado" : "eliminado"} correctamente`);
+      location.reload();
+    } else {
+      alert("Hubo un problema, intenta nuevamente.");
+    }
+  } catch (error) {
+    console.error(`Error al ${accion}:`, error);
+  }
+}
