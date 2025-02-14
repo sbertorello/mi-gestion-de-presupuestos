@@ -1,27 +1,46 @@
 // URL del Google Apps Script
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxtF-PyqeFnv8Qy1-sKPMj30H94m6lyQL4Zi9N7GUYljBk1qpJFnyTVAkdWR-TN9lAolQ/exec';
 
-// Elemento contenedor principal
+// Elementos del DOM
 const contenedorEventos = document.getElementById('eventos-container');
+const loadingElement = document.getElementById('loading');
+
+// Función para mostrar/ocultar el indicador de carga
+function toggleLoading(show) {
+    loadingElement.style.display = show ? 'block' : 'none';
+}
 
 // Función para cargar los eventos pendientes
 async function cargarEventosPendientes() {
     try {
+        toggleLoading(true);
         const response = await fetch(`${SCRIPT_URL}?action=obtenerEventosPendientes`);
         const data = await response.json();
         
+        if (!data) {
+            throw new Error('No se recibieron datos del servidor');
+        }
+        
         if (data.success) {
-            mostrarEventos(data.eventos);
+            mostrarEventos(data.eventos || []);
         } else {
-            console.error('Error al cargar eventos:', data.error);
+            throw new Error(data.error || 'Error desconocido al cargar eventos');
         }
     } catch (error) {
-        console.error('Error en la solicitud:', error);
+        console.error('Error al cargar eventos:', error);
+        contenedorEventos.innerHTML = `<p class="error">Error al cargar los eventos: ${error.message}</p>`;
+    } finally {
+        toggleLoading(false);
     }
 }
 
 // Función para mostrar los eventos en el DOM
 function mostrarEventos(eventos) {
+    if (eventos.length === 0) {
+        contenedorEventos.innerHTML = '<p>No hay eventos pendientes</p>';
+        return;
+    }
+
     contenedorEventos.innerHTML = '';
     
     eventos.forEach(evento => {
@@ -58,15 +77,19 @@ function mostrarEventos(eventos) {
     // Agregar event listeners para los botones
     document.querySelectorAll('.btn-confirmar').forEach(btn => {
         btn.addEventListener('click', async (e) => {
-            const id = e.target.dataset.id;
-            await manejarAccionEvento(id, 'confirmar');
+            if (confirm('¿Deseas confirmar este evento?')) {
+                const id = e.target.dataset.id;
+                await manejarAccionEvento(id, 'confirmar');
+            }
         });
     });
     
     document.querySelectorAll('.btn-eliminar').forEach(btn => {
         btn.addEventListener('click', async (e) => {
-            const id = e.target.dataset.id;
-            await manejarAccionEvento(id, 'eliminar');
+            if (confirm('¿Estás seguro de que deseas eliminar este evento?')) {
+                const id = e.target.dataset.id;
+                await manejarAccionEvento(id, 'eliminar');
+            }
         });
     });
 }
@@ -74,17 +97,20 @@ function mostrarEventos(eventos) {
 // Función para manejar las acciones de confirmar/eliminar
 async function manejarAccionEvento(id, accion) {
     try {
+        toggleLoading(true);
         const response = await fetch(`${SCRIPT_URL}?action=${accion}Evento&id=${id}`);
         const data = await response.json();
         
         if (data.success) {
-            // Recargar la lista de eventos
             await cargarEventosPendientes();
         } else {
-            console.error(`Error al ${accion} evento:`, data.error);
+            throw new Error(data.error || `Error al ${accion} el evento`);
         }
     } catch (error) {
-        console.error('Error en la solicitud:', error);
+        console.error(`Error al ${accion} evento:`, error);
+        alert(`Error al ${accion} el evento: ${error.message}`);
+    } finally {
+        toggleLoading(false);
     }
 }
 
