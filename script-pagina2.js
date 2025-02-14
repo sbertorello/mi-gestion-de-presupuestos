@@ -1,87 +1,92 @@
-document.addEventListener("DOMContentLoaded", cargarPresupuestosPendientes);
+// URL del Google Apps Script
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxtF-PyqeFnv8Qy1-sKPMj30H94m6lyQL4Zi9N7GUYljBk1qpJFnyTVAkdWR-TN9lAolQ/exec';
 
-const API_URL = "https://script.google.com/macros/s/AKfycbxtF-PyqeFnv8Qy1-sKPMj30H94m6lyQL4Zi9N7GUYljBk1qpJFnyTVAkdWR-TN9lAolQ/exec";
+// Elemento contenedor principal
+const contenedorEventos = document.getElementById('eventos-container');
 
-async function cargarPresupuestosPendientes() {
-  try {
-    const response = await fetch(`${API_URL}?action=obtenerPendientes`);
+// Función para cargar los eventos pendientes
+async function cargarEventosPendientes() {
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=obtenerEventosPendientes`);
+        const data = await response.json();
+        
+        if (data.success) {
+            mostrarEventos(data.eventos);
+        } else {
+            console.error('Error al cargar eventos:', data.error);
+        }
+    } catch (error) {
+        console.error('Error en la solicitud:', error);
+    }
+}
+
+// Función para mostrar los eventos en el DOM
+function mostrarEventos(eventos) {
+    contenedorEventos.innerHTML = '';
     
-    if (!response.ok) {
-      throw new Error(`Error en la solicitud (HTTP ${response.status})`);
-    }
-
-    const data = await response.json();
-    
-    if (!data || !data.presupuestos) {
-      throw new Error(data.error || "No se recibieron datos válidos desde el servidor");
-    }
-
-    const lista = document.getElementById("lista-presupuestos");
-    lista.innerHTML = "";
-
-    if (data.presupuestos.length === 0) {
-      lista.innerHTML = "<p>No hay presupuestos pendientes.</p>";
-      return;
-    }
-
-    data.presupuestos.forEach(presupuesto => {
-      const contenedor = document.createElement("div");
-      contenedor.classList.add("presupuesto-item");
-
-      const titulo = document.createElement("h3");
-      titulo.textContent = presupuesto.nombre;
-      titulo.onclick = () => {
-        detalles.style.display = detalles.style.display === "none" ? "block" : "none";
-      };
-
-      const detalles = document.createElement("div");
-      detalles.classList.add("detalles");
-      detalles.style.display = "none";
-      detalles.innerHTML = `
-        <p><strong>Tipo:</strong> ${presupuesto.tipo}</p>
-        <p><strong>Precio:</strong> $${presupuesto.precio}</p>
-        <p><strong>Cuotas:</strong> ${presupuesto.cuotas}</p>
-        <p><strong>Fecha:</strong> ${presupuesto.fecha}</p>
-      `;
-
-      const botonConfirmar = document.createElement("button");
-      botonConfirmar.textContent = "✅ Confirmar";
-      botonConfirmar.onclick = () => actualizarPresupuesto(presupuesto.id, "confirmarPresupuesto");
-
-      const botonEliminar = document.createElement("button");
-      botonEliminar.textContent = "❌ Eliminar";
-      botonEliminar.onclick = () => actualizarPresupuesto(presupuesto.id, "eliminarPresupuesto");
-
-      detalles.appendChild(botonConfirmar);
-      detalles.appendChild(botonEliminar);
-      contenedor.appendChild(titulo);
-      contenedor.appendChild(detalles);
-      lista.appendChild(contenedor);
+    eventos.forEach(evento => {
+        const elementoEvento = document.createElement('div');
+        elementoEvento.className = 'evento';
+        
+        const nombreEvento = document.createElement('h3');
+        nombreEvento.textContent = evento.nombre;
+        nombreEvento.className = 'evento-titulo';
+        
+        const detallesEvento = document.createElement('div');
+        detallesEvento.className = 'evento-detalles oculto';
+        detallesEvento.innerHTML = `
+            <p><strong>Tipo de Evento:</strong> ${evento.tipo}</p>
+            <p><strong>Precio:</strong> $${evento.precio}</p>
+            <p><strong>Cuotas:</strong> ${evento.cuotas}</p>
+            <p><strong>Fecha:</strong> ${evento.fecha}</p>
+            <div class="botones-accion">
+                <button class="btn-confirmar" data-id="${evento.id}">✅ Confirmar</button>
+                <button class="btn-eliminar" data-id="${evento.id}">❌ Eliminar</button>
+            </div>
+        `;
+        
+        // Evento para mostrar/ocultar detalles
+        nombreEvento.addEventListener('click', () => {
+            detallesEvento.classList.toggle('oculto');
+        });
+        
+        elementoEvento.appendChild(nombreEvento);
+        elementoEvento.appendChild(detallesEvento);
+        contenedorEventos.appendChild(elementoEvento);
     });
-  } catch (error) {
-    console.error("Error al cargar los presupuestos:", error);
-    document.getElementById("lista-presupuestos").innerHTML = `<p style="color:red;">${error.message}</p>`;
-  }
+    
+    // Agregar event listeners para los botones
+    document.querySelectorAll('.btn-confirmar').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const id = e.target.dataset.id;
+            await manejarAccionEvento(id, 'confirmar');
+        });
+    });
+    
+    document.querySelectorAll('.btn-eliminar').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const id = e.target.dataset.id;
+            await manejarAccionEvento(id, 'eliminar');
+        });
+    });
 }
 
-async function actualizarPresupuesto(id, accion) {
-  try {
-    const response = await fetch(`${API_URL}?action=${accion}&id=${id}`);
-    
-    if (!response.ok) {
-      throw new Error(`Error en la solicitud (HTTP ${response.status})`);
+// Función para manejar las acciones de confirmar/eliminar
+async function manejarAccionEvento(id, accion) {
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=${accion}Evento&id=${id}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            // Recargar la lista de eventos
+            await cargarEventosPendientes();
+        } else {
+            console.error(`Error al ${accion} evento:`, data.error);
+        }
+    } catch (error) {
+        console.error('Error en la solicitud:', error);
     }
-
-    const data = await response.json();
-    
-    if (data.success) {
-      alert(`Presupuesto ${accion === "confirmarPresupuesto" ? "confirmado" : "eliminado"} correctamente`);
-      location.reload();
-    } else {
-      throw new Error(data.error || "Hubo un problema, intenta nuevamente.");
-    }
-  } catch (error) {
-    console.error(`Error al ${accion}:`, error);
-    alert(error.message);
-  }
 }
+
+// Cargar eventos al iniciar la página
+document.addEventListener('DOMContentLoaded', cargarEventosPendientes);
