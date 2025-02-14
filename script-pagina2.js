@@ -1,5 +1,5 @@
 // URL del Google Apps Script
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxtF-PyqeFnv8Qy1-sKPMj30H94m6lyQL4Zi9N7GUYljBk1qpJFnyTVAkdWR-TN9lAolQ/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzIxBOkWqhvjIBocmR8ZGljvyJDl5m3cZOaz4qAr-BXmsOvplcN_crmKawKy_nhsnGuxQ/exec';
 
 // Elementos del DOM
 const contenedorEventos = document.getElementById('eventos-container');
@@ -24,7 +24,7 @@ async function cargarEventosPendientes() {
         if (data.success) {
             mostrarEventos(data.eventos || []);
         } else {
-            throw new Error(data.error || 'Error desconocido al cargar eventos');
+            throw new Error(data.error || 'Error al cargar eventos');
         }
     } catch (error) {
         console.error('Error al cargar eventos:', error);
@@ -64,7 +64,6 @@ function mostrarEventos(eventos) {
             </div>
         `;
         
-        // Evento para mostrar/ocultar detalles
         nombreEvento.addEventListener('click', () => {
             detallesEvento.classList.toggle('oculto');
         });
