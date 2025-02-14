@@ -1,9 +1,9 @@
 // URL de tu Google Apps Script
-const PI_URL = "https://script.google.com/macros/s/AKfycbxtF-PyqeFnv8Qy1-sKPMj30H94m6lyQL4Zi9N7GUYljBk1qpJFnyTVAkdWR-TN9lAolQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxtF-PyqeFnv8Qy1-sKPMj30H94m6lyQL4Zi9N7GUYljBk1qpJFnyTVAkdWR-TN9lAolQ/exec";
 
 // Función para obtener y mostrar los presupuestos
 function obtenerPresupuestos() {
-  fetch(`${PI_URL}?action=getPresupuestos`)
+  fetch(`${API_URL}?action=getPresupuestos`)
     .then(response => response.json())
     .then(data => {
       const contenedor = document.getElementById('presupuestos-contenedor');
@@ -43,7 +43,7 @@ function obtenerPresupuestos() {
 // Función para confirmar un presupuesto
 function confirmarPresupuesto(id) {
   if (confirm("¿Estás seguro de confirmar este presupuesto?")) {
-    fetch(`${PI_URL}?action=confirmarPresupuesto&id=${id}`)
+    fetch(`${API_URL}?action=confirmarPresupuesto&id=${id}`)
       .then(response => response.json())
       .then(data => {
         if (data.success) {
@@ -60,7 +60,7 @@ function confirmarPresupuesto(id) {
 // Función para rechazar un presupuesto
 function rechazarPresupuesto(id) {
   if (confirm("¿Estás seguro de rechazar este presupuesto?")) {
-    fetch(`${PI_URL}?action=rechazarPresupuesto&id=${id}`)
+    fetch(`${API_URL}?action=rechazarPresupuesto&id=${id}`)
       .then(response => response.json())
       .then(data => {
         if (data.success) {
