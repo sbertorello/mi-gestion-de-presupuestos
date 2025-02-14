@@ -5,12 +5,15 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxtF-PyqeFnv8Qy1-sKPMj3
 async function cargarPresupuestosPendientes() {
   try {
     const response = await fetch(`${API_URL}?action=obtenerPendientes`);
-    if (!response.ok) throw new Error("Error en la solicitud al servidor");
+    
+    if (!response.ok) {
+      throw new Error(`Error en la solicitud (HTTP ${response.status})`);
+    }
 
     const data = await response.json();
-
+    
     if (!data || !data.presupuestos) {
-      throw new Error("No se recibieron datos válidos desde el servidor");
+      throw new Error(data.error || "No se recibieron datos válidos desde el servidor");
     }
 
     const lista = document.getElementById("lista-presupuestos");
@@ -43,12 +46,10 @@ async function cargarPresupuestosPendientes() {
 
       const botonConfirmar = document.createElement("button");
       botonConfirmar.textContent = "✅ Confirmar";
-      botonConfirmar.classList.add("confirmar");
       botonConfirmar.onclick = () => actualizarPresupuesto(presupuesto.id, "confirmarPresupuesto");
 
       const botonEliminar = document.createElement("button");
       botonEliminar.textContent = "❌ Eliminar";
-      botonEliminar.classList.add("eliminar");
       botonEliminar.onclick = () => actualizarPresupuesto(presupuesto.id, "eliminarPresupuesto");
 
       detalles.appendChild(botonConfirmar);
@@ -59,23 +60,28 @@ async function cargarPresupuestosPendientes() {
     });
   } catch (error) {
     console.error("Error al cargar los presupuestos:", error);
-    document.getElementById("lista-presupuestos").innerHTML = `<p style="color:red;">Error al cargar los datos: ${error.message}</p>`;
+    document.getElementById("lista-presupuestos").innerHTML = `<p style="color:red;">${error.message}</p>`;
   }
 }
 
 async function actualizarPresupuesto(id, accion) {
   try {
     const response = await fetch(`${API_URL}?action=${accion}&id=${id}`);
-    if (!response.ok) throw new Error("Error en la solicitud al servidor");
+    
+    if (!response.ok) {
+      throw new Error(`Error en la solicitud (HTTP ${response.status})`);
+    }
 
     const data = await response.json();
+    
     if (data.success) {
       alert(`Presupuesto ${accion === "confirmarPresupuesto" ? "confirmado" : "eliminado"} correctamente`);
       location.reload();
     } else {
-      alert("Hubo un problema, intenta nuevamente.");
+      throw new Error(data.error || "Hubo un problema, intenta nuevamente.");
     }
   } catch (error) {
     console.error(`Error al ${accion}:`, error);
+    alert(error.message);
   }
 }
