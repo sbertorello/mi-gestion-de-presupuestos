@@ -1,60 +1,70 @@
 document.addEventListener("DOMContentLoaded", cargarPresupuestosPendientes);
 
+const API_URL = "https://script.google.com/macros/s/AKfycbxtF-PyqeFnv8Qy1-sKPMj30H94m6lyQL4Zi9N7GUYljBk1qpJFnyTVAkdWR-TN9lAolQ/exec";
+
 async function cargarPresupuestosPendientes() {
+  try {
+    const response = await fetch(`${API_URL}?action=obtenerPendientes`);
+    if (!response.ok) throw new Error("Error en la solicitud");
+    
+    const data = await response.json();
     const lista = document.getElementById("lista-presupuestos");
     lista.innerHTML = "";
-    document.getElementById("loading").style.display = "block";
 
-    try {
-        const response = await fetch("https://script.google.com/macros/s/AKfycbxtF-PyqeFnvv8Qy1-sKPMj30H94m6lyQL4Zi9N7GUYljBk1qpJFnyTVAkdWR-TN9lAolQ/exec?action=obtenerPendientes");
-        const data = await response.json();
+    data.presupuestos.forEach(presupuesto => {
+      const contenedor = document.createElement("div");
+      contenedor.classList.add("presupuesto-item");
 
-        document.getElementById("loading").style.display = "none";
+      const titulo = document.createElement("h3");
+      titulo.textContent = presupuesto.nombre;
+      titulo.onclick = () => {
+        detalles.style.display = detalles.style.display === "none" ? "block" : "none";
+      };
 
-        if (data.success && data.presupuestos.length > 0) {
-            data.presupuestos.forEach(presupuesto => {
-                const item = document.createElement("div");
-                item.classList.add("presupuesto-item");
-                item.innerHTML = `<h3>${presupuesto.nombreEvento}</h3>`;
-                const detalles = document.createElement("div");
-                detalles.classList.add("detalles");
-                detalles.innerHTML = `
-                    <p>Tipo: ${presupuesto.tipoEvento}</p>
-                    <p>Precio: $${presupuesto.precio}</p>
-                    <p>Cuotas: ${presupuesto.cuotas}</p>
-                    <p>Fecha: ${presupuesto.fechaEvento}</p>
-                    <button class="confirmar" onclick="confirmarPresupuesto('${presupuesto.id}')">✅ Confirmar</button>
-                    <button class="eliminar" onclick="eliminarPresupuesto('${presupuesto.id}')">❌ Eliminar</button>
-                `;
-                detalles.style.display = "none";
-                item.appendChild(detalles);
-                item.addEventListener("click", () => {
-                    detalles.style.display = detalles.style.display === "none" ? "block" : "none";
-                });
-                lista.appendChild(item);
-            });
-        } else {
-            lista.innerHTML = "<p>No hay presupuestos pendientes.</p>";
-        }
-    } catch (error) {
-        console.error("Error al cargar los presupuestos:", error);
-        lista.innerHTML = "<p>Error al cargar los presupuestos.</p>";
+      const detalles = document.createElement("div");
+      detalles.classList.add("detalles");
+      detalles.style.display = "none";
+      detalles.innerHTML = `
+        <p><strong>Tipo:</strong> ${presupuesto.tipo}</p>
+        <p><strong>Precio:</strong> $${presupuesto.precio}</p>
+        <p><strong>Cuotas:</strong> ${presupuesto.cuotas}</p>
+        <p><strong>Fecha:</strong> ${presupuesto.fecha}</p>
+      `;
+
+      const botonConfirmar = document.createElement("button");
+      botonConfirmar.textContent = "✅ Confirmar";
+      botonConfirmar.classList.add("confirmar");
+      botonConfirmar.onclick = () => actualizarPresupuesto(presupuesto.id, "confirmarPresupuesto");
+
+      const botonEliminar = document.createElement("button");
+      botonEliminar.textContent = "❌ Eliminar";
+      botonEliminar.classList.add("eliminar");
+      botonEliminar.onclick = () => actualizarPresupuesto(presupuesto.id, "eliminarPresupuesto");
+
+      detalles.appendChild(botonConfirmar);
+      detalles.appendChild(botonEliminar);
+      contenedor.appendChild(titulo);
+      contenedor.appendChild(detalles);
+      lista.appendChild(contenedor);
+    });
+  } catch (error) {
+    console.error("Error al cargar los presupuestos:", error);
+  }
+}
+
+async function actualizarPresupuesto(id, accion) {
+  try {
+    const response = await fetch(`${API_URL}?action=${accion}&id=${id}`);
+    if (!response.ok) throw new Error("Error en la solicitud");
+
+    const data = await response.json();
+    if (data.success) {
+      alert(`Presupuesto ${accion === "confirmarPresupuesto" ? "confirmado" : "eliminado"} correctamente`);
+      location.reload();
+    } else {
+      alert("Hubo un problema, intenta nuevamente.");
     }
-}
-
-async function confirmarPresupuesto(id) {
-    await actualizarEstadoPresupuesto(id, "confirmar");
-}
-
-async function eliminarPresupuesto(id) {
-    await actualizarEstadoPresupuesto(id, "eliminar");
-}
-
-async function actualizarEstadoPresupuesto(id, accion) {
-    try {
-        await fetch(`https://script.google.com/macros/s/AKfycbxtF-PyqeFnvv8Qy1-sKPMj30H94m6lyQL4Zi9N7GUYljBk1qpJFnyTVAkdWR-TN9lAolQ/exec?action=${accion}&id=${id}`);
-        location.reload();
-    } catch (error) {
-        console.error(`Error al ${accion} el presupuesto:`, error);
-    }
+  } catch (error) {
+    console.error(`Error al ${accion}:`, error);
+  }
 }
