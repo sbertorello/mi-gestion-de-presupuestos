@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 });
 
 async function cargarPresupuestosEnviados() {
-    const contenedor = document.getElementById("contenedor-presupuestos");
+    const contenedor = document.getElementById("eventos-container");
     contenedor.innerHTML = "<p>Cargando presupuestos...</p>";
 
     try {
