@@ -1,33 +1,47 @@
-document.addEventListener("DOMContentLoaded", async function () {
-    await cargarPresupuestosEnviados();
+document.addEventListener("DOMContentLoaded", function () {
+    cargarPresupuestosEnviados();
 });
+
+const API_URL = "https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec";
 
 async function cargarPresupuestosEnviados() {
     const contenedor = document.getElementById("eventos-container");
-    contenedor.innerHTML = "<p>Cargando presupuestos...</p>";
+    const loading = document.getElementById("loading");
+
+    if (!contenedor) {
+        console.error("Elemento 'eventos-container' no encontrado.");
+        return;
+    }
 
     try {
-        const respuesta = await fetch("https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec?accion=obtenerPresupuestos");
-        const datos = await respuesta.json();
-        
-        contenedor.innerHTML = ""; // Limpiar la pantalla
+        const response = await fetch(`${API_URL}?accion=obtenerPresupuestosEnviados`);
+        const data = await response.json();
 
-        if (datos.length === 0) {
+        contenedor.innerHTML = "";
+        loading.style.display = "none";
+
+        if (!data || data.length === 0) {
             contenedor.innerHTML = "<p>No hay presupuestos enviados.</p>";
             return;
         }
 
-        datos.forEach((presupuesto, index) => {
-            const presupuestoElemento = document.createElement("div");
-            presupuestoElemento.classList.add("presupuesto");
-            presupuestoElemento.innerHTML = `
-                <p><strong>Cliente:</strong> ${presupuesto.cliente}</p>
-                <p><strong>Monto:</strong> $${presupuesto.monto}</p>
-                <p><strong>Estado:</strong> ${presupuesto.estado}</p>
-                <button onclick="cambiarEstado(${index}, 'Confirmado')">Confirmar</button>
-                <button onclick="cambiarEstado(${index}, 'Rechazado')">Rechazar</button>
+        data.forEach((presupuesto, index) => {
+            const item = document.createElement("div");
+            item.classList.add("presupuesto-item");
+
+            item.innerHTML = `
+                <div class="presupuesto-header" onclick="toggleDetalles(${index})">
+                    ${presupuesto.nombre} - ${presupuesto.fecha}
+                </div>
+                <div class="presupuesto-detalles" id="detalles-${index}">
+                    <p><strong>Cliente:</strong> ${presupuesto.cliente}</p>
+                    <p><strong>Monto:</strong> ${presupuesto.monto}</p>
+                    <button class="btn-confirmar" onclick="confirmarPresupuesto('${presupuesto.id}')">Confirmar</button>
+                    <button class="btn-rechazar" onclick="rechazarPresupuesto('${presupuesto.id}')">Rechazar</button>
+                </div>
             `;
-            contenedor.appendChild(presupuestoElemento);
+
+            contenedor.appendChild(item);
         });
     } catch (error) {
         console.error("Error al cargar los presupuestos:", error);
@@ -35,23 +49,29 @@ async function cargarPresupuestosEnviados() {
     }
 }
 
-async function cambiarEstado(indice, nuevoEstado) {
-    try {
-        const respuesta = await fetch("https://script.google.com/macros/s/AKfycbysKn3fzo5IQ9Nnf5AeTI41dOyA2Sj-Az9_ARMUHKMzcnRHE4T0gcmh5ehZg-vB-0W8gw/exec?accion=actualizarEstado", {
-            method: "POST",
-            body: JSON.stringify({ indice, nuevoEstado }),
-            headers: { "Content-Type": "application/json" }
-        });
+function toggleDetalles(index) {
+    const detalles = document.getElementById(`detalles-${index}`);
+    if (detalles) {
+        detalles.style.display = detalles.style.display === "none" ? "block" : "none";
+    }
+}
 
-        const resultado = await respuesta.json();
-        if (resultado.success) {
-            alert("Estado actualizado correctamente.");
-            await cargarPresupuestosEnviados(); // Recargar la lista para reflejar los cambios
-        } else {
-            alert("Error al actualizar el estado.");
-        }
+async function confirmarPresupuesto(id) {
+    try {
+        await fetch(`${API_URL}?accion=confirmarPresupuesto&id=${id}`);
+        alert("Presupuesto confirmado.");
+        cargarPresupuestosEnviados();
     } catch (error) {
-        console.error("Error al actualizar el estado:", error);
-        alert("No se pudo actualizar el estado.");
+        console.error("Error al confirmar presupuesto:", error);
+    }
+}
+
+async function rechazarPresupuesto(id) {
+    try {
+        await fetch(`${API_URL}?accion=rechazarPresupuesto&id=${id}`);
+        alert("Presupuesto rechazado.");
+        cargarPresupuestosEnviados();
+    } catch (error) {
+        console.error("Error al rechazar presupuesto:", error);
     }
 }
