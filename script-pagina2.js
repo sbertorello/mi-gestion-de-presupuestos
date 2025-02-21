@@ -29,25 +29,30 @@ const api = {
         const queryString = new URLSearchParams({ action, ...params }).toString();
         const url = `${CONFIG.API_URL}?${queryString}`;
 
-        try {
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error(`Error HTTP: ${response.status}`);
-            }
-            const data = await response.json();
-            if (!data.success) {
-                throw new Error(data.error || 'Error en la respuesta del servidor');
-            }
-            return data;
-        } catch (error) {
-            console.error('Error en fetchData:', error);
-            throw error;
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
         }
+        
+        const data = await response.json();
+        if (!data.success) {
+            throw new Error(data.error || 'Error en la respuesta del servidor');
+        }
+        
+        return data.data;
     },
 
-    getEventos: () => api.fetchData('obtenerEventosPendientes'),
-    confirmarEvento: (id) => api.fetchData('confirmarEvento', { id }),
-    eliminarEvento: (id) => api.fetchData('eliminarEvento', { id })
+    async getEventos() {
+        return this.fetchData('obtenerEventosPendientes');
+    },
+
+    async confirmarEvento(id) {
+        return this.fetchData('confirmarEvento', { id });
+    },
+
+    async eliminarEvento(id) {
+        return this.fetchData('eliminarEvento', { id });
+    }
 };
 
 // Funciones de UI
@@ -95,24 +100,6 @@ const ui = {
 
     mostrarEventosVacios() {
         elements.container.innerHTML = '<p class="sin-eventos">No hay eventos pendientes</p>';
-    },
-
-    async confirmarEvento(id) {
-        if (await ui.confirmarAccion('¿Deseas confirmar este evento?')) {
-            await app.manejarAccion(id, 'confirmar');
-        }
-    },
-
-    async eliminarEvento(id) {
-        if (await ui.confirmarAccion('¿Estás seguro de que deseas eliminar este evento?')) {
-            await app.manejarAccion(id, 'eliminar');
-        }
-    },
-
-    confirmarAccion(mensaje) {
-        return new Promise(resolve => {
-            resolve(window.confirm(mensaje));
-        });
     }
 };
 
@@ -121,10 +108,9 @@ const app = {
     async cargarEventos() {
         utils.toggleLoading(true);
         try {
-            const data = await api.getEventos();
-            const eventos = data.eventos || [];
-
-            if (eventos.length === 0) {
+            const eventos = await api.getEventos();
+            
+            if (!eventos || eventos.length === 0) {
                 ui.mostrarEventosVacios();
                 return;
             }
@@ -145,29 +131,40 @@ const app = {
 
     agregarEventListeners() {
         document.querySelectorAll('.btn-confirmar').forEach(btn => {
-            btn.addEventListener('click', (e) => ui.confirmarEvento(e.target.dataset.id));
+            btn.addEventListener('click', async (e) => {
+                try {
+                    const id = e.target.dataset.id;
+                    if (confirm('¿Deseas confirmar este evento?')) {
+                        utils.toggleLoading(true);
+                        await api.confirmarEvento(id);
+                        await this.cargarEventos();
+                    }
+                } catch (error) {
+                    console.error('Error al confirmar evento:', error);
+                    alert(`Error al confirmar el evento: ${error.message}`);
+                } finally {
+                    utils.toggleLoading(false);
+                }
+            });
         });
 
         document.querySelectorAll('.btn-eliminar').forEach(btn => {
-            btn.addEventListener('click', (e) => ui.eliminarEvento(e.target.dataset.id));
+            btn.addEventListener('click', async (e) => {
+                try {
+                    const id = e.target.dataset.id;
+                    if (confirm('¿Estás seguro de que deseas eliminar este evento?')) {
+                        utils.toggleLoading(true);
+                        await api.eliminarEvento(id);
+                        await this.cargarEventos();
+                    }
+                } catch (error) {
+                    console.error('Error al eliminar evento:', error);
+                    alert(`Error al eliminar el evento: ${error.message}`);
+                } finally {
+                    utils.toggleLoading(false);
+                }
+            });
         });
-    },
-
-    async manejarAccion(id, tipo) {
-        utils.toggleLoading(true);
-        try {
-            if (tipo === 'confirmar') {
-                await api.confirmarEvento(id);
-            } else {
-                await api.eliminarEvento(id);
-            }
-            await this.cargarEventos();
-        } catch (error) {
-            console.error(`Error al ${tipo} evento:`, error);
-            alert(`Error al ${tipo} el evento: ${error.message}`);
-        } finally {
-            utils.toggleLoading(false);
-        }
     },
 
     init() {
