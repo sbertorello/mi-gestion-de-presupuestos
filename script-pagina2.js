@@ -1,77 +1,173 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const eventosContainer = document.getElementById("eventos-container");
-    const loading = document.getElementById("loading");
+// Configuración global
+const CONFIG = {
+    API_URL: 'https://script.google.com/macros/s/AKfycbzIxBOkWqhvjIBocmR8ZGljvyJDl5m3cZOaz4qAr-BXmsOvplcN_crmKawKy_nhsnGuxQ/exec',
+    ESTADOS: {
+        PENDIENTE: 'Pendiente',
+        CONFIRMADO: 'Confirmado',
+        RECHAZADO: 'Rechazado'
+    }
+};
 
-    // URL de Google Apps Script
-    const URL_APP_SCRIPT = "https://script.google.com/macros/s/AKfycbzIxBOkWqhvjIBocmR8ZGljvyJDl5m3cZOaz4qAr-BXmsOvplcN_crmKawKy_nhsnGuxQ/exec";
+// Elementos del DOM
+const elements = {
+    container: document.getElementById('eventos-container'),
+    loading: document.getElementById('loading')
+};
 
-    // Función para cargar los presupuestos enviados
-    function cargarPresupuestos() {
-        fetch(`${URL_APP_SCRIPT}?accion=obtenerPresupuestos`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json"
+// Utilidades
+const utils = {
+    formatCurrency: (amount) => `$${parseFloat(amount).toLocaleString('es-AR')}`,
+    formatDate: (date) => new Date(date).toLocaleDateString('es-AR'),
+    toggleLoading: (show) => {
+        elements.loading.style.display = show ? 'block' : 'none';
+    }
+};
+
+// Funciones de API
+const api = {
+    async fetchData(action, params = {}) {
+        const queryString = new URLSearchParams({ action, ...params }).toString();
+        const url = `${CONFIG.API_URL}?${queryString}`;
+
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-        })
-        .then(response => response.json())
-        .then(data => {
-            loading.style.display = "none";
-            eventosContainer.innerHTML = "";
+            const data = await response.json();
+            if (!data.success) {
+                throw new Error(data.error || 'Error en la respuesta del servidor');
+            }
+            return data;
+        } catch (error) {
+            console.error('Error en fetchData:', error);
+            throw error;
+        }
+    },
 
-            if (!data || data.length === 0) {
-                eventosContainer.innerHTML = "<p>No hay presupuestos enviados.</p>";
+    getEventos: () => api.fetchData('obtenerEventosPendientes'),
+    confirmarEvento: (id) => api.fetchData('confirmarEvento', { id }),
+    eliminarEvento: (id) => api.fetchData('eliminarEvento', { id })
+};
+
+// Funciones de UI
+const ui = {
+    crearElementoEvento(evento) {
+        const elemento = document.createElement('div');
+        elemento.className = 'evento';
+        
+        const titulo = document.createElement('h3');
+        titulo.className = 'evento-titulo';
+        titulo.textContent = evento.nombre;
+        
+        const detalles = document.createElement('div');
+        detalles.className = 'evento-detalles oculto';
+        detalles.innerHTML = `
+            <p><strong>Tipo de Evento:</strong> ${evento.tipo}</p>
+            <p><strong>Precio:</strong> ${utils.formatCurrency(evento.precio)}</p>
+            <p><strong>Cuotas:</strong> ${evento.cuotas}</p>
+            <p><strong>Fecha:</strong> ${utils.formatDate(evento.fecha)}</p>
+            <div class="botones-accion">
+                <button class="btn-confirmar" data-id="${evento.id}">✅ Confirmar</button>
+                <button class="btn-eliminar" data-id="${evento.id}">❌ Eliminar</button>
+            </div>
+        `;
+
+        titulo.addEventListener('click', () => {
+            detalles.classList.toggle('oculto');
+        });
+
+        elemento.appendChild(titulo);
+        elemento.appendChild(detalles);
+        return elemento;
+    },
+
+    mostrarError(mensaje) {
+        elements.container.innerHTML = `
+            <div class="error-mensaje">
+                <p>Error: ${mensaje}</p>
+                <button onclick="app.cargarEventos()">Reintentar</button>
+            </div>
+        `;
+    },
+
+    mostrarEventosVacios() {
+        elements.container.innerHTML = '<p class="sin-eventos">No hay eventos pendientes</p>';
+    },
+
+    async confirmarEvento(id) {
+        if (await ui.confirmarAccion('¿Deseas confirmar este evento?')) {
+            await app.manejarAccion(id, 'confirmar');
+        }
+    },
+
+    async eliminarEvento(id) {
+        if (await ui.confirmarAccion('¿Estás seguro de que deseas eliminar este evento?')) {
+            await app.manejarAccion(id, 'eliminar');
+        }
+    },
+
+    confirmarAccion(mensaje) {
+        return new Promise(resolve => {
+            resolve(window.confirm(mensaje));
+        });
+    }
+};
+
+// Aplicación principal
+const app = {
+    async cargarEventos() {
+        utils.toggleLoading(true);
+        try {
+            const data = await api.getEventos();
+            const eventos = data.eventos || [];
+
+            if (eventos.length === 0) {
+                ui.mostrarEventosVacios();
                 return;
             }
 
-            data.forEach(presupuesto => {
-                const item = document.createElement("div");
-                item.classList.add("presupuesto-item");
-
-                item.innerHTML = `
-                    <div class="presupuesto-header">${presupuesto.cliente} - ${presupuesto.monto}</div>
-                    <div class="presupuesto-detalles">
-                        <p><strong>Fecha:</strong> ${presupuesto.fecha}</p>
-                        <p><strong>Descripción:</strong> ${presupuesto.descripcion}</p>
-                        <button class="btn-confirmar" data-id="${presupuesto.id}">Confirmar</button>
-                        <button class="btn-rechazar" data-id="${presupuesto.id}">Rechazar</button>
-                    </div>
-                `;
-
-                eventosContainer.appendChild(item);
-
-                // Mostrar detalles al hacer clic en el encabezado
-                item.querySelector(".presupuesto-header").addEventListener("click", () => {
-                    const detalles = item.querySelector(".presupuesto-detalles");
-                    detalles.style.display = detalles.style.display === "none" ? "block" : "none";
-                });
-
-                // Eventos para confirmar y rechazar
-                item.querySelector(".btn-confirmar").addEventListener("click", () => cambiarEstadoPresupuesto(presupuesto.id, "Confirmado"));
-                item.querySelector(".btn-rechazar").addEventListener("click", () => cambiarEstadoPresupuesto(presupuesto.id, "Rechazado"));
+            elements.container.innerHTML = '';
+            eventos.forEach(evento => {
+                elements.container.appendChild(ui.crearElementoEvento(evento));
             });
-        })
-        .catch(error => {
-            console.error("Error al cargar los presupuestos:", error);
-            loading.innerHTML = "Error al cargar los presupuestos.";
+
+            this.agregarEventListeners();
+        } catch (error) {
+            console.error('Error al cargar eventos:', error);
+            ui.mostrarError(error.message);
+        } finally {
+            utils.toggleLoading(false);
+        }
+    },
+
+    agregarEventListeners() {
+        document.querySelectorAll('.btn-confirmar').forEach(btn => {
+            btn.addEventListener('click', (e) => ui.confirmarEvento(e.target.dataset.id));
         });
-    }
 
-    // Función para cambiar estado de un presupuesto
-    function cambiarEstadoPresupuesto(id, nuevoEstado) {
-        fetch(`${URL_APP_SCRIPT}?accion=cambiarEstado&id=${id}&estado=${nuevoEstado}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        })
-        .then(response => response.text())
-        .then(result => {
-            alert(result);
-            cargarPresupuestos();
-        })
-        .catch(error => console.error("Error al cambiar el estado:", error));
-    }
+        document.querySelectorAll('.btn-eliminar').forEach(btn => {
+            btn.addEventListener('click', (e) => ui.eliminarEvento(e.target.dataset.id));
+        });
+    },
 
-    // Cargar los presupuestos al iniciar
-    cargarPresupuestos();
-});
+    async manejarAccion(id, tipo) {
+        utils.toggleLoading(true);
+        try {
+            await api[tipo === 'confirmar' ? 'confirmarEvento' : 'eliminarEvento'](id);
+            await this.cargarEventos();
+        } catch (error) {
+            console.error(`Error al ${tipo} evento:`, error);
+            alert(`Error al ${tipo} el evento: ${error.message}`);
+        } finally {
+            utils.toggleLoading(false);
+        }
+    },
+
+    init() {
+        this.cargarEventos();
+    }
+};
+
+// Iniciar la aplicación cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', () => app.init());
