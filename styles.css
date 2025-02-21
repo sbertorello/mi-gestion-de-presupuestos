@@ -14,54 +14,65 @@ h1 {
     margin-bottom: 20px;
 }
 
-
 /* ================================================== */
-/* Estilos restaurados de la página 1 */
+/* Estilos para la página 1 (Index.html) */
 /* ================================================== */
 
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 0;
-}
-
-#container {
-    max-width: 800px;
-    margin: 0 auto;
+.container {
+    background-color: #fff;
     padding: 20px;
-    background: #fff;
+    border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
+    width: 400px;
+    margin: 0 auto;
 }
 
-h1 {
-    text-align: center;
-    color: #333;
-}
-
-.button {
+label {
     display: block;
+    margin-bottom: 5px;
+}
+
+input,
+select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
     width: 100%;
     padding: 10px;
-    margin: 10px 0;
-    background: #007BFF;
+    background-color: #28a745;
     color: #fff;
-    text-align: center;
     border: none;
-    border-radius: 5px;
+    border-radius: 4px;
     cursor: pointer;
+    margin-bottom: 10px;
 }
 
-.button:hover {
-    background: #0056b3;
+button:hover {
+    background-color: #218838;
+}
+
+a {
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+    color: #007bff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
 }
 
 /* ================================================== */
-/* Estilos para la página 2 (Presupuestos Enviados) */
+/* Estilos para la página 2 (pagina2.html) */
 /* ================================================== */
 
-#eventos-container {
+#presupuestos-contenedor {
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
@@ -91,7 +102,7 @@ h1 {
 }
 
 .presupuesto-detalles {
-    display: none;
+    display: none; /* Oculto por defecto */
     margin-top: 10px;
     padding: 10px;
     border-top: 1px solid #eee;
