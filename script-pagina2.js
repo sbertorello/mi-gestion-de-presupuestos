@@ -61,7 +61,8 @@ const ui = {
         titulo.textContent = evento.nombre;
         
         const detalles = document.createElement('div');
-        detalles.className = 'evento-detalles oculto';
+        detalles.className = 'evento-detalles';
+        detalles.style.display = 'none';
         detalles.innerHTML = `
             <p><strong>Tipo de Evento:</strong> ${evento.tipo}</p>
             <p><strong>Precio:</strong> ${utils.formatCurrency(evento.precio)}</p>
@@ -74,7 +75,8 @@ const ui = {
         `;
 
         titulo.addEventListener('click', () => {
-            detalles.classList.toggle('oculto');
+            const estaVisible = detalles.style.display === 'block';
+            detalles.style.display = estaVisible ? 'none' : 'block';
         });
 
         elemento.appendChild(titulo);
