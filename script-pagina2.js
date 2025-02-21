@@ -32,7 +32,7 @@ const api = {
         try {
             const response = await fetch(url);
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`Error HTTP: ${response.status}`);
             }
             const data = await response.json();
             if (!data.success) {
@@ -154,7 +154,11 @@ const app = {
     async manejarAccion(id, tipo) {
         utils.toggleLoading(true);
         try {
-            await api[tipo === 'confirmar' ? 'confirmarEvento' : 'eliminarEvento'](id);
+            if (tipo === 'confirmar') {
+                await api.confirmarEvento(id);
+            } else {
+                await api.eliminarEvento(id);
+            }
             await this.cargarEventos();
         } catch (error) {
             console.error(`Error al ${tipo} evento:`, error);
