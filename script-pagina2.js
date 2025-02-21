@@ -1,26 +1,11 @@
 // Configuración global
 const CONFIG = {
-    API_URL: 'https://script.google.com/macros/s/AKfycbzIxBOkWqhvjIBocmR8ZGljvyJDl5m3cZOaz4qAr-BXmsOvplcN_crmKawKy_nhsnGuxQ/exec',
-    ESTADOS: {
-        PENDIENTE: 'Pendiente',
-        CONFIRMADO: 'Confirmado',
-        RECHAZADO: 'Rechazado'
-    }
+    API_URL: 'https://script.google.com/macros/s/AKfycbzIxBOkWqhvjIBocmR8ZGljvyJDl5m3cZOaz4qAr-BXmsOvplcN_crmKawKy_nhsnGuxQ/exec'
 };
 
 // Elementos del DOM
 const elements = {
-    container: document.getElementById('eventos-container'),
-    loading: document.getElementById('loading')
-};
-
-// Utilidades
-const utils = {
-    formatCurrency: (amount) => `$${parseFloat(amount).toLocaleString('es-AR')}`,
-    formatDate: (date) => new Date(date).toLocaleDateString('es-AR'),
-    toggleLoading: (show) => {
-        elements.loading.style.display = show ? 'block' : 'none';
-    }
+    container: document.getElementById('eventos-container')
 };
 
 // Funciones de API
@@ -28,30 +13,23 @@ const api = {
     async fetchData(action, params = {}) {
         const queryString = new URLSearchParams({ action, ...params }).toString();
         const url = `${CONFIG.API_URL}?${queryString}`;
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
 
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status}`);
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error || 'Error en la respuesta del servidor');
+
+            console.log('Datos recibidos:', data.data);  // Depuración
+            return data.data;
+        } catch (error) {
+            console.error('Error en fetchData:', error);
+            return [];
         }
-        
-        const data = await response.json();
-        if (!data.success) {
-            throw new Error(data.error || 'Error en la respuesta del servidor');
-        }
-        
-        return data.data;
     },
 
     async getEventos() {
         return this.fetchData('obtenerEventosPendientes');
-    },
-
-    async confirmarEvento(id) {
-        return this.fetchData('confirmarEvento', { id });
-    },
-
-    async eliminarEvento(id) {
-        return this.fetchData('eliminarEvento', { id });
     }
 };
 
@@ -64,38 +42,19 @@ const ui = {
         const titulo = document.createElement('h3');
         titulo.className = 'evento-titulo';
         titulo.textContent = evento.nombre;
-        
+
         const detalles = document.createElement('div');
         detalles.className = 'evento-detalles';
-        detalles.style.display = 'none';
         detalles.innerHTML = `
             <p><strong>Tipo de Evento:</strong> ${evento.tipo}</p>
-            <p><strong>Precio:</strong> ${utils.formatCurrency(evento.precio)}</p>
+            <p><strong>Precio:</strong> $${parseFloat(evento.precio).toLocaleString()}</p>
             <p><strong>Cuotas:</strong> ${evento.cuotas}</p>
-            <p><strong>Fecha:</strong> ${utils.formatDate(evento.fecha)}</p>
-            <div class="botones-accion">
-                <button class="btn-confirmar" data-id="${evento.id}">✅ Confirmar</button>
-                <button class="btn-eliminar" data-id="${evento.id}">❌ Eliminar</button>
-            </div>
+            <p><strong>Fecha:</strong> ${new Date(evento.fecha).toLocaleDateString()}</p>
         `;
-
-        titulo.addEventListener('click', () => {
-            const estaVisible = detalles.style.display === 'block';
-            detalles.style.display = estaVisible ? 'none' : 'block';
-        });
 
         elemento.appendChild(titulo);
         elemento.appendChild(detalles);
         return elemento;
-    },
-
-    mostrarError(mensaje) {
-        elements.container.innerHTML = `
-            <div class="error-mensaje">
-                <p>Error: ${mensaje}</p>
-                <button onclick="app.cargarEventos()">Reintentar</button>
-            </div>
-        `;
     },
 
     mostrarEventosVacios() {
@@ -106,11 +65,11 @@ const ui = {
 // Aplicación principal
 const app = {
     async cargarEventos() {
-        utils.toggleLoading(true);
         try {
             const eventos = await api.getEventos();
-            
+
             if (!eventos || eventos.length === 0) {
+                console.warn('No hay eventos pendientes.');
                 ui.mostrarEventosVacios();
                 return;
             }
@@ -120,51 +79,10 @@ const app = {
                 elements.container.appendChild(ui.crearElementoEvento(evento));
             });
 
-            this.agregarEventListeners();
         } catch (error) {
             console.error('Error al cargar eventos:', error);
-            ui.mostrarError(error.message);
-        } finally {
-            utils.toggleLoading(false);
+            ui.mostrarEventosVacios();
         }
-    },
-
-    agregarEventListeners() {
-        document.querySelectorAll('.btn-confirmar').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                try {
-                    const id = e.target.dataset.id;
-                    if (confirm('¿Deseas confirmar este evento?')) {
-                        utils.toggleLoading(true);
-                        await api.confirmarEvento(id);
-                        await this.cargarEventos();
-                    }
-                } catch (error) {
-                    console.error('Error al confirmar evento:', error);
-                    alert(`Error al confirmar el evento: ${error.message}`);
-                } finally {
-                    utils.toggleLoading(false);
-                }
-            });
-        });
-
-        document.querySelectorAll('.btn-eliminar').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                try {
-                    const id = e.target.dataset.id;
-                    if (confirm('¿Estás seguro de que deseas eliminar este evento?')) {
-                        utils.toggleLoading(true);
-                        await api.eliminarEvento(id);
-                        await this.cargarEventos();
-                    }
-                } catch (error) {
-                    console.error('Error al eliminar evento:', error);
-                    alert(`Error al eliminar el evento: ${error.message}`);
-                } finally {
-                    utils.toggleLoading(false);
-                }
-            });
-        });
     },
 
     init() {
